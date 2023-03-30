@@ -1,0 +1,1 @@
+export { TagRender } from "./TagRender";

@@ -1,0 +1,21 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`title > API > does not encode all characters with HTML character entity equivalents 1`] = `"膣膗 鍆錌雔"`;
+
+exports[`title > API > page title with prop itemProp 1`] = `"Test Title with itemProp"`;
+
+exports[`title > API > retains existing title tag when no title tag is defined 1`] = `"Existing Title"`;
+
+exports[`title > API > sets title based on deepest nested component 1`] = `"Nested Title"`;
+
+exports[`title > API > sets title using deepest nested component with a defined title 1`] = `"Main Title"`;
+
+exports[`title > API > updates page title 1`] = `"Test Title"`;
+
+exports[`title > API > updates page title and allows children containing expressions 1`] = `"Title: Some Great Title"`;
+
+exports[`title > API > updates page title with multiple children 1`] = `"Child Two Title"`;
+
+exports[`title > API > uses defaultTitle component if no title is defined 1`] = `"LeftFallback RightFallback"`;
+
+exports[`title > API > uses defaultTitle if no title is defined 1`] = `"Fallback"`;
