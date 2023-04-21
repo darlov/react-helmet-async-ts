@@ -1,54 +1,63 @@
 import {HELMET_ATTRIBUTE, Helmet, Body} from '../../src';
 import {customRender} from './utils';
 import {BodyProps} from "../../src/Types";
-import {_} from "../../src/Utils";
+
+type ExtendedBodyProps = (BodyProps & { "animal-type": string, "dropzone": string });
+type BodyPropKey = keyof ExtendedBodyProps;
+type AttributeTestData<T extends BodyPropKey> = {
+    name: T,
+    value: ExtendedBodyProps[T],
+    htmlName?: keyof HTMLBodyElement | string,
+    expectedValue?: string
+}
+type AttributeTestDataMap = {
+    [Property in BodyPropKey]: AttributeTestData<Property>
+};
+type AttributeTest<T extends BodyPropKey> = AttributeTestDataMap[T];
+
 
 describe('body attributes', () => {
     describe('valid attributes', () => {
-        const attributeList: BodyProps & {"data-animal-type": string, "data-dropzone": string} = {
-            accessKey: 'c',
-            className: 'test',
-            contentEditable: 'true',
-            contextMenu: 'mymenu',
-            "data-animal-type": 'lion',
-            dir: 'rtl',
-            draggable: 'true',
-            "data-dropzone": 'copy',
-            hidden: true,
-            id: 'test',
-            lang: 'fr',
-            spellCheck: 'true',
-            style: {color: "green"},
-            tabIndex: -1,
-            title: 'test',
-            translate: 'no',
-        };
+        it.each<AttributeTest<BodyPropKey>>([
+            {name: "accessKey", value: "c"},
+            {name: "className", value: "test"},
+            {name: "contentEditable", value: true, expectedValue: "true"},
+            {name: "contextMenu", value: "mymenu"},
+            {name: "animal-type", value: "lion"},
+            {name: "dir", value: "rtl"},
+            {name: "draggable", value: true, expectedValue: "true"},
+            {name: "dropzone", value: "copy"},
+            {name: "hidden", value: true},
+            {name: "id", value: "test"},
+            {name: "lang", value: "fr"},
+            {name: "spellCheck", value: true, expectedValue: "true"},
+            {name: "style", value: {color: "green"}, expectedValue: "color:green"},
+            {name: "tabIndex", value: -1, expectedValue: "-1"},
+            {name: "title", value: "test"},
+            {name: "translate", value: "no"},
+        ])(`$name`, ({name, value, htmlName, expectedValue}) => {
+            const attr = {
+                [name]: value,
+            };
 
-        _.toPairs(attributeList).forEach(([key, attribute]) => {
-            it(`${attribute}`, () => {
-                const attrValue = attributeList[attribute];
+            customRender(
+                <Helmet>
+                    <Body {...attr} />
+                </Helmet>
+            );
 
-                const attr = {
-                    [attribute]: attrValue,
-                };
+            const bodyTag = document.body;
+            const nameToGet = htmlName || name;
 
-                customRender(
-                    <Helmet>
-                        <Body {...attr} />
-                    </Helmet>
-                );
+            expect(bodyTag.getAttribute(nameToGet) || bodyTag[nameToGet as keyof HTMLElement])
+                .toEqual(expectedValue === undefined ? value : expectedValue);
 
-                const bodyTag = document.body;
-
-                const reactCompatAttr = HTML_TAG_MAP[attribute] || attribute;
-
-                expect(bodyTag.getAttribute(reactCompatAttr)).toEqual(attrValue);
-                expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toEqual(reactCompatAttr);
-            });
+            expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toEqual("true");
         });
     });
 
     it('updates multiple body attributes', () => {
+        1
         customRender(
             <Helmet>
                 <Body className="myClassName" tabIndex={-1}/>
@@ -59,7 +68,7 @@ describe('body attributes', () => {
 
         expect(bodyTag.getAttribute('class')).toBe('myClassName');
         expect(bodyTag.getAttribute('tabindex')).toBe('-1');
-        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('class,tabindex');
+        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('true');
     });
 
     it('sets attributes based on the deepest nested component', () => {
@@ -77,7 +86,7 @@ describe('body attributes', () => {
         const bodyTag = document.body;
 
         expect(bodyTag.getAttribute('lang')).toBe('ja');
-        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('lang');
+        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('true');
     });
 
     it('handles valueless attributes', () => {
@@ -89,18 +98,19 @@ describe('body attributes', () => {
 
         const bodyTag = document.body;
 
-        expect(bodyTag.getAttribute('hidden')).toBe('true');
-        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('hidden');
+        expect(bodyTag.getAttribute('hidden')).toBe('');
+        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('true');
     });
 
     it('clears body attributes that are handled within helmet', () => {
         customRender(
-            <Helmet>
-                <Body lang="en" hidden/>
-            </Helmet>
+            <>
+                <Helmet>
+                    <Body lang="en" hidden/>
+                </Helmet>
+                <Helmet/>
+            </>
         );
-
-        customRender(<Helmet/>);
 
         const bodyTag = document.body;
 
@@ -111,15 +121,14 @@ describe('body attributes', () => {
 
     it('updates with multiple additions and removals - overwrite and new', () => {
         customRender(
-            <Helmet>
-                <Body lang="en" hidden/>
-            </Helmet>
-        );
-
-        customRender(
-            <Helmet>
-                <Body lang="ja" id="body-tag" title="body tag"/>
-            </Helmet>
+            <>
+                <Helmet>
+                    <Body lang="en" hidden/>
+                </Helmet>
+                <Helmet>
+                    <Body lang="ja" id="body-tag" title="body tag"/>
+                </Helmet>
+            </>
         );
 
         const bodyTag = document.body;
@@ -128,20 +137,19 @@ describe('body attributes', () => {
         expect(bodyTag.getAttribute('lang')).toBe('ja');
         expect(bodyTag.getAttribute('id')).toBe('body-tag');
         expect(bodyTag.getAttribute('title')).toBe('body tag');
-        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('lang,id,title');
+        expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe('true');
     });
 
     it('updates with multiple additions and removals - all new', () => {
         customRender(
-            <Helmet>
-                <Body lang="en" hidden/>
-            </Helmet>
-        );
-
-        customRender(
-            <Helmet>
-                <Body id="body-tag" title="body tag"/>
-            </Helmet>
+            <>
+                <Helmet>
+                    <Body lang="en" hidden/>
+                </Helmet>
+                <Helmet>
+                    <Body id="body-tag" title="body tag"/>
+                </Helmet>
+            </>
         );
 
         const bodyTag = document.body;
@@ -196,4 +204,5 @@ describe('body attributes', () => {
             expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBeNull();
         });
     });
-});
+})
+;

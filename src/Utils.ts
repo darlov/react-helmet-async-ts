@@ -80,17 +80,21 @@ export namespace _ {
   }
 }
 
-export const mergeTags = <T extends TagProps>(tagProp: keyof IHelmetTags, result: T[], instances: IHelmetInstanceState[], primaryAttributeSelector: (tag: T) => string | undefined) => {
+export const mergeTags = <TTags extends keyof IHelmetTags, TElement = IHelmetTags[TTags]>(
+    tagProp: TTags, 
+    result: TElement[], 
+    instances: IHelmetInstanceState[], 
+    primaryAttributeSelector: (tag: TElement) => string | undefined) => {
   for (const instance of instances) {
-    const inTags = instance[tagProp] as T[] | undefined;
+    const inTags = instance[tagProp] as TElement[] | undefined;
     if (inTags) {
       if (instance.emptyState) {
         _.clear(result);
       } else if (result.length === 0) {
         result.push(...inTags);
       } else {
-        const instanceGrouped = _.groupBy(inTags, primaryAttributeSelector, (item, index) => ([item, index] as [T, number]));
-        const resultGrouped = _.groupBy(result, primaryAttributeSelector, (item, index) => ([item, index] as [T, number]));
+        const instanceGrouped = _.groupBy(inTags, primaryAttributeSelector, (item, index) => ([item, index] as [TElement, number]));
+        const resultGrouped = _.groupBy(result, primaryAttributeSelector, (item, index) => ([item, index] as [TElement, number]));
 
         for (const [attr, instanceTags] of instanceGrouped.entries()) {
           const resultTags = resultGrouped.get(attr);

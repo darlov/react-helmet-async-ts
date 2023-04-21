@@ -8,6 +8,7 @@ import {LinkRender} from "./LinkRender";
 import {NoscriptRender} from "./NoscriptRender";
 import {_} from "../Utils";
 import {BaseRender} from "./BaseRender";
+import {BodyRender} from "./BodyRender";
 
 interface ITagRenderProps {
     instances?: IHelmetInstanceState[],
@@ -25,6 +26,7 @@ export const TagRender: FC<ITagRenderProps> = memo(({instances}) => {
                 <LinkRender instances={orderedInstances}/>
                 <NoscriptRender instances={orderedInstances}/>
                 <BaseRender instances={orderedInstances}/>
+                <BodyRender instances={orderedInstances}/>
             </>)
     }
 
