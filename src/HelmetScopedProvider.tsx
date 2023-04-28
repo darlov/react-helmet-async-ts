@@ -1,7 +1,7 @@
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
 import {
   BaseProps,
-  BodyProps,
+  BodyProps, HtmlProps,
   LinkProps,
   MetaProps,
   NoscriptProps,
@@ -9,8 +9,8 @@ import {
   StyleProps,
   TagProps,
   TitleProps
-} from "./Types";
-import { addAction, removeAction } from "./Utils";
+} from "./types";
+import { addAction, removeAction } from "./utils";
 
 export interface ITagsActions<T extends TagProps> {
   add: (title: T) => void;
@@ -33,6 +33,7 @@ export interface IHelmetScopedContextData {
   noscriptActions: ITagsActions<NoscriptProps>;
   baseActions: ITagsActions<BaseProps>;
   bodyActions: ITagsActions<BodyProps>;
+  htmlActions: ITagsActions<HtmlProps>;
 }
 
 export const HelmetScopedContext = createContext<IHelmetScopedContextData | undefined>(undefined);

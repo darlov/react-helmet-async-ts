@@ -1,12 +1,12 @@
 import { FC, memo, useEffect } from "react";
-import { BodyProps } from "../types";
+import { HtmlProps } from "../types";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 import { _ } from "../utils";
 
-const isValid = (tag: BodyProps) => !_.isEmpty(tag);
+const isValid = (tag: HtmlProps) => !_.isEmpty(tag);
 
-const BodyTag: FC<BodyProps> = props => {
-  const actions = useScopedHelmetContext().bodyActions;
+const HtmlTag: FC<HtmlProps> = props => {
+  const actions = useScopedHelmetContext().htmlActions;
 
   useEffect(() => {
     if (isValid(props)) {
@@ -18,5 +18,5 @@ const BodyTag: FC<BodyProps> = props => {
   return null;
 };
 
-export const Body = memo(BodyTag);
-Body.displayName = "Body";
+export const Html = memo(HtmlTag);
+Html.displayName = "Html";

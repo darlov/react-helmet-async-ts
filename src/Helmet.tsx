@@ -5,7 +5,7 @@ import {
     IHelmetScopedContextData
 } from "./HelmetScopedProvider";
 import {
-    BaseProps, BodyProps,
+    BaseProps, BodyProps, HtmlProps,
     IHelmetInstanceState,
     LinkProps,
     MetaProps,
@@ -13,8 +13,8 @@ import {
     ScriptProps,
     StyleProps,
     TitleProps
-} from "./Types";
-import {_} from "./Utils";
+} from "./types";
+import {_} from "./utils";
 import {useHelmetContext} from "./HelmetProvider";
 import {Title} from "./tags";
 
@@ -24,47 +24,50 @@ interface IHelmetProps {
 }
 
 export const Helmet: FC<IHelmetProps> = memo(({children, defaultTitle}) => {
-    const [titles, setTitles] = useState<TitleProps[]>();
-    const [metas, setMetas] = useState<MetaProps[]>([]);
-    const [styles, setStyles] = useState<StyleProps[]>([]);
-    const [scripts, setScripts] = useState<ScriptProps[]>([]);
-    const [links, setLinks] = useState<LinkProps[]>([]);
-    const [noscripts, setNoscripts] = useState<NoscriptProps[]>([]);
-    const [bases, setBases] = useState<BaseProps[]>([]);
-    const [bodies, setBodies] = useState<BodyProps[]>([]);
+    const [titleTags, setTitleTags] = useState<TitleProps[]>();
+    const [metaTags, setMetaTags] = useState<MetaProps[]>();
+    const [styleTags, setStyleTags] = useState<StyleProps[]>();
+    const [scriptTags, setScriptTags] = useState<ScriptProps[]>();
+    const [linkTags, setLinkTags] = useState<LinkProps[]>();
+    const [noscriptTags, setNoscriptTags] = useState<NoscriptProps[]>();
+    const [baseTags, setBaseTags] = useState<BaseProps[]>();
+    const [bodyTags, setBodyTags] = useState<BodyProps[]>();
+    const [htmlTags, setHtmlTags] = useState<HtmlProps[]>();
     const rootContext = useHelmetContext();
     const sourceId = useId();
     const id = useMemo(() => {
         return parseInt(sourceId.replace(":r", "").replace(":", ""), 32);
     }, [sourceId])
 
-    const instanceState = useMemo<IHelmetInstanceState | undefined>(() => {
+    const instanceState = useMemo<IHelmetInstanceState>(() => {
         return {
             id,
-            emptyState: _.isEmptyArray(titles, metas, styles, scripts, links, noscripts, bases, bodies),
-            titles,
-            metas,
-            styles,
-            scripts,
-            links,
-            noscripts,
-            bases,
-            bodies
+            emptyState: _.isEmptyArray(titleTags, metaTags, styleTags, scriptTags, linkTags, noscriptTags, baseTags, bodyTags, htmlTags),
+            titleTags: titleTags,
+            metaTags: metaTags,
+            styleTags: styleTags,
+            scriptTags: scriptTags,
+            linkTags: linkTags,
+            noscriptTags: noscriptTags,
+            baseTags: baseTags,
+            bodyTags: bodyTags,
+            htmlTags: htmlTags
         }
-    }, [id, titles, metas, styles, scripts, links, noscripts, bases, bodies])
+    }, [id, titleTags, metaTags, styleTags, scriptTags, linkTags, noscriptTags, baseTags, bodyTags, htmlTags])
 
     const context = useMemo<IHelmetScopedContextData>(() => {
         return {
-            titleActions: createActionsData(setTitles),
-            metaActions: createActionsData(setMetas),
-            styleActions: createActionsData(setStyles),
-            scriptActions: createActionsData(setScripts),
-            linkActions: createActionsData(setLinks),
-            noscriptActions: createActionsData(setNoscripts),
-            baseActions: createActionsData(setBases),
-            bodyActions: createActionsData(setBodies)
+            titleActions: createActionsData(setTitleTags),
+            metaActions: createActionsData(setMetaTags),
+            styleActions: createActionsData(setStyleTags),
+            scriptActions: createActionsData(setScriptTags),
+            linkActions: createActionsData(setLinkTags),
+            noscriptActions: createActionsData(setNoscriptTags),
+            baseActions: createActionsData(setBaseTags),
+            bodyActions: createActionsData(setBodyTags),
+            htmlActions: createActionsData(setHtmlTags)
         }
-    }, [setTitles, setMetas, setStyles, setScripts, setLinks, setBases, setBodies]);
+    }, [setTitleTags, setMetaTags, setStyleTags, setScriptTags, setLinkTags, setBaseTags, setBodyTags, setHtmlTags]);
 
     useEffect(() => {
         if (instanceState !== undefined) {

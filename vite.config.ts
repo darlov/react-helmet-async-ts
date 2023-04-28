@@ -30,7 +30,7 @@ export default defineConfig((opt) => {
       rollupOptions: {
         // make sure to externalize deps that shouldn't be bundled
         // into your library
-        external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+        external: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom/server'],
         output: {
 
           // Provide global variables to use in the UMD build
@@ -38,8 +38,9 @@ export default defineConfig((opt) => {
           globals: {
             react: 'react',
             "react-dom": 'reactDom',
-            'react/jsx-runtime': "jsxRuntime",
-            'react/jsx-dev-runtime': "jsxDevRuntime",
+            'react/jsx-runtime': "reactJsxRuntime",
+            'react/jsx-dev-runtime': "reactJsxDevRuntime",
+            'react-dom/server': "reactDomServer",
           },
         },
       },

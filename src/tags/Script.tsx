@@ -1,5 +1,5 @@
 import { FC, memo, useEffect } from "react";
-import {ScriptProps} from "../Types";
+import {ScriptProps} from "../types";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 
 const isValid = (tag: ScriptProps) => tag.children !== undefined || tag.src !== undefined

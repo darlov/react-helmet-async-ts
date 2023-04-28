@@ -1,6 +1,6 @@
 import { FC, memo, useEffect } from "react";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
-import { MetaProps, primaryMetaAttributes } from "../Types";
+import { MetaProps, primaryMetaAttributes } from "../types";
 
 const isMetaValid = (meta: MetaProps) => primaryMetaAttributes.some(attr => meta[attr] !== undefined)
 

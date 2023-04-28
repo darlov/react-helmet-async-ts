@@ -1,34 +1,17 @@
-import {FC, useEffect, useMemo} from "react";
-import {BodyProps, IHelmetInstanceState} from "../Types";
-import {_, mergeTags} from "../Utils";
-import {renderToString} from "react-dom/server";
+import {FC, useEffect} from "react";
+import {BodyProps} from "../types";
+import {renderToStaticMarkup} from "react-dom/server";
 
 interface IBaseRenderProps {
-    instances: IHelmetInstanceState[],
+    tag?: BodyProps,
 }
-
 
 const parser = new DOMParser();
 
-export const BodyRender: FC<IBaseRenderProps> = ({instances}) => {
-    const bodyProps = useMemo(() => {
-        let result: BodyProps | undefined = undefined;
-
-        for (const instance of instances) {
-            if (instance.emptyState) {
-                result = undefined;
-                continue;
-            }
-            result = (instance.bodies || []).reduce((prev, current) => {
-                return {...(prev ?? {}), ...current}
-            }, result as BodyProps | undefined)
-        }
-        return result;
-    }, [instances])
-
+export const BodyRender: FC<IBaseRenderProps> = ({tag}) => {
     useEffect(() => {
-        if (bodyProps !== undefined) {
-            const tt = renderToString(<body {...bodyProps} data-rh={true}/>);
+        if (tag !== undefined) {
+            const tt = renderToStaticMarkup(<body {...tag} data-rh={true}/>);
             const parsed = parser.parseFromString(tt, "application/xml");
             const body = parsed.querySelector("body");
             const attributes = body!.getAttributeNames().reduce((result, attrName) => {
@@ -45,7 +28,7 @@ export const BodyRender: FC<IBaseRenderProps> = ({instances}) => {
                 attributes.forEach(attr => document.body.removeAttribute(attr.name))
             }
         }
-    }, [bodyProps])
+    }, [tag])
 
     return null;
 }

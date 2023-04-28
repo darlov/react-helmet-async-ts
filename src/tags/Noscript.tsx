@@ -1,5 +1,5 @@
 import {FC, memo, useEffect} from "react";
-import {NoscriptProps} from "../Types";
+import {NoscriptProps} from "../types";
 import {useScopedHelmetContext} from "../HelmetScopedProvider";
 
 const isValid = (tag: NoscriptProps) => tag.children !== undefined

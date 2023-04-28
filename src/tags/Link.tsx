@@ -1,5 +1,5 @@
 import { FC, memo, useEffect } from "react";
-import { LinkProps, primaryLinkAttributes } from "../Types";
+import { LinkProps, primaryLinkAttributes } from "../types";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 
 const isLinkValid = (link: LinkProps) => primaryLinkAttributes.every(attr => link[attr] !== undefined)

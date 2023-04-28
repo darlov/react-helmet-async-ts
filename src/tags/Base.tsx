@@ -1,5 +1,5 @@
 import { FC, memo, useEffect } from "react";
-import {BaseProps} from "../Types";
+import {BaseProps} from "../types";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 
 const isValid = (tag: BaseProps) => tag.href !== undefined
