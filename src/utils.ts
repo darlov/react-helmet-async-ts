@@ -165,13 +165,14 @@ const mergeAllToAll = <T extends keyof IHelmetTags, TElement extends ArrayElemen
   result: TElement[],
   instance: IHelmetInstanceState
 ): TElement[] => {
+
+  if (instance.emptyState) {
+    _.clear(result);
+  }
+  
   if (instance[key]) {
-    if (instance.emptyState) {
-      _.clear(result);
-    } else {
       const values = instance[key] as TElement[];
       result.push(...values);
-    }
   }
 
   return result;
@@ -183,38 +184,40 @@ const mergeAllByPrimaryAttribute = <T extends keyof IHelmetTags, TElement = IHel
   instance: IHelmetInstanceState,
   primaryAttributeSelector: (tag: TElement) => string | undefined
 ) => {
-  const instanceInputTags = instance[tagProp] as TElement[] | undefined;
-  if (instanceInputTags) {
-    if (instance.emptyState) {
-      _.clear(result);
-    } else if (result.length === 0) {
-      result.push(...instanceInputTags);
-    } else {
-      const instanceGrouped = _.groupBy(
-        instanceInputTags,
-        primaryAttributeSelector,
-        (item, index) => [item, index] as [TElement, number]
-      );
-      const resultGrouped = _.groupBy(
-        result,
-        primaryAttributeSelector,
-        (item, index) => [item, index] as [TElement, number]
-      );
+  if (instance.emptyState) {
+    _.clear(result);
+  }else {
+    const instanceInputTags = instance[tagProp] as TElement[] | undefined;
+    if (instanceInputTags) {
+      if (result.length === 0) {
+        result.push(...instanceInputTags);
+      } else {
+        const instanceGrouped = _.groupBy(
+            instanceInputTags,
+            primaryAttributeSelector,
+            (item, index) => [item, index] as [TElement, number]
+        );
+        const resultGrouped = _.groupBy(
+            result,
+            primaryAttributeSelector,
+            (item, index) => [item, index] as [TElement, number]
+        );
 
-      for (const [attr, instanceTags] of instanceGrouped.entries()) {
-        const resultTags = resultGrouped.get(attr);
+        for (const [attr, instanceTags] of instanceGrouped.entries()) {
+          const resultTags = resultGrouped.get(attr);
 
-        if (resultTags === undefined) {
-          result.push(...instanceTags.map(([tags]) => tags));
-        } else if (instanceTags.length !== resultTags.length) {
-          result = result.filter(m => !resultTags.some(([tag]) => m === tag));
-          result.push(...instanceTags.map(([tag]) => tag));
-        } else {
-          for (let i = 0; i < instanceTags.length; i++) {
-            const [instanceTag] = instanceTags[i];
-            const [resultTag, resultIndex] = resultTags[i];
+          if (resultTags === undefined) {
+            result.push(...instanceTags.map(([tags]) => tags));
+          } else if (instanceTags.length !== resultTags.length) {
+            result = result.filter(m => !resultTags.some(([tag]) => m === tag));
+            result.push(...instanceTags.map(([tag]) => tag));
+          } else {
+            for (let i = 0; i < instanceTags.length; i++) {
+              const [instanceTag] = instanceTags[i];
+              const [resultTag, resultIndex] = resultTags[i];
 
-            result[resultIndex] = { ...resultTag, ...instanceTag };
+              result[resultIndex] = {...resultTag, ...instanceTag};
+            }
           }
         }
       }
@@ -251,7 +254,6 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
     state.htmlTag = mergeAllToOne("htmlTags", state.htmlTag, instance);
     state.styleTags = mergeAllToAll("styleTags", state.styleTags, instance);
     state.scriptTags = mergeAllToAll("scriptTags", state.scriptTags, instance);
-    state.noscriptTags = mergeAllToAll("noscriptTags", state.noscriptTags, instance);
     state.noscriptTags = mergeAllToAll("noscriptTags", state.noscriptTags, instance);
     state.metaTags = mergeAllByPrimaryAttribute(
       "metaTags",

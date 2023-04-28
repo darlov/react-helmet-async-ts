@@ -65,8 +65,9 @@ export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({ childre
 
   return (
     <HelmetContext.Provider value={context}>
-      {children}
       <TagRender instances={instances} />
+      {children}
+  
     </HelmetContext.Provider>
   );
 };

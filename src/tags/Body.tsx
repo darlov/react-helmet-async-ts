@@ -18,5 +18,5 @@ const BodyTag: FC<BodyProps> = props => {
   return null;
 };
 
-export const Body = memo(BodyTag);
+export const Body = BodyTag;
 Body.displayName = "Body";

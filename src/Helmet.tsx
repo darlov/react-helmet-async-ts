@@ -23,7 +23,7 @@ interface IHelmetProps {
     children?: ReactNode
 }
 
-export const Helmet: FC<IHelmetProps> = memo(({children, defaultTitle}) => {
+export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
     const [titleTags, setTitleTags] = useState<TitleProps[]>();
     const [metaTags, setMetaTags] = useState<MetaProps[]>();
     const [styleTags, setStyleTags] = useState<StyleProps[]>();
@@ -81,6 +81,6 @@ export const Helmet: FC<IHelmetProps> = memo(({children, defaultTitle}) => {
             {defaultTitle && <Title>{defaultTitle}</Title>}
             {children}
         </HelmetScopedContext.Provider>);
-})
+}
 
 Helmet.displayName = "Helmet";

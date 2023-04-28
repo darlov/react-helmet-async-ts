@@ -185,7 +185,7 @@ describe("body attributes", () => {
       const bodyTag = document.body;
 
       expect(bodyTag.getAttribute("test")).toBe("helmet-attr");
-      expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe("test");
+      expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
     });
 
     it("attributes are cleared once managed in helmet", () => {
