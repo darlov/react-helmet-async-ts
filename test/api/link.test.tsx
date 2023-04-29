@@ -31,12 +31,10 @@ describe("link tags", () => {
 
     it("clears all link tags if none are specified", () => {
       customRender(
-        <>
-          <Helmet>
-            <Link href="http://localhost/helmet" rel="canonical" />
-          </Helmet>
-          <Helmet />
-        </>
+        <Helmet>
+          <Link href="http://localhost/helmet" rel="canonical" />
+        </Helmet>,
+        <Helmet />
       );
 
       const tagNodes = document.head.querySelectorAll(`link[${HELMET_ATTRIBUTE}]`);

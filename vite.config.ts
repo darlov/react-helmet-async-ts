@@ -8,7 +8,7 @@ export default defineConfig((opt) => {
     plugins: [react() as any, typescript({tsconfig: opt.mode === "test"? "./test/tsconfig.json" : "./tsconfig.json" })],
     test: {
       globals: true,
-      environment: 'jsdom',
+      environment: 'happy-dom',
       setupFiles: "./vitest.setup.ts",
       include: ['**\/*.{test,spec}.{ts,tsx}'],
       logHeapUsage: true,

@@ -1,5 +1,5 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`misc > Declarative API > encodes special characters 1`] = `"<meta name="description" content="This is &quot;quoted&quot; text and &amp; and '." data-rh="true">"`;
+exports[`misc > Declarative API > encodes special characters 1`] = `"<meta name="description" content="This is &quot;quoted&quot; text and &amp; and &#x27;." data-rh="true">"`;
 
 exports[`misc > Declarative API > recognizes valid tags regardless of attribute ordering 1`] = `"<meta content="Test Description" name="description" data-rh="true">"`;

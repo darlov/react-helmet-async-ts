@@ -1,16 +1,12 @@
-export interface IAnyAttrOptions {
-  [key: string]: any;
-}
-
-export type TitleProps = JSX.IntrinsicElements['title'] & IAnyAttrOptions;
-export type MetaProps = JSX.IntrinsicElements['meta'] & IAnyAttrOptions;
-export type StyleProps = JSX.IntrinsicElements['style'] & IAnyAttrOptions;
-export type ScriptProps = JSX.IntrinsicElements['script'] & IAnyAttrOptions;
-export type LinkProps = JSX.IntrinsicElements['link'] & IAnyAttrOptions;
-export type NoscriptProps = JSX.IntrinsicElements['noscript'] & IAnyAttrOptions;
-export type BaseProps = JSX.IntrinsicElements['base'] & IAnyAttrOptions;
-export type BodyProps = JSX.IntrinsicElements['body'] & IAnyAttrOptions;
-export type HtmlProps = JSX.IntrinsicElements['html'] & IAnyAttrOptions;
+export type TitleProps = JSX.IntrinsicElements['title'];
+export type MetaProps = JSX.IntrinsicElements['meta'];
+export type StyleProps = JSX.IntrinsicElements['style'];
+export type ScriptProps = JSX.IntrinsicElements['script'];
+export type LinkProps = JSX.IntrinsicElements['link'];
+export type NoscriptProps = JSX.IntrinsicElements['noscript'];
+export type BaseProps = JSX.IntrinsicElements['base'];
+export type BodyProps = JSX.IntrinsicElements['body'];
+export type HtmlProps = JSX.IntrinsicElements['html'];
 
 export type TagProps = TitleProps | MetaProps | StyleProps | ScriptProps | LinkProps | NoscriptProps | BaseProps | BodyProps | HtmlProps;
 
@@ -53,5 +49,4 @@ export const primaryMetaAttributes: readonly MetaAttribute[] = ["charSet", "name
 export const primaryLinkAttributes: readonly LinkAttribute[] = ["rel", "href"] as const
 
 export const HELMET_ATTRIBUTE = 'data-rh';
-export const DOCUMENT_TITLE_INSTANCE_ID = -1;
 

@@ -2,13 +2,16 @@ import { HELMET_ATTRIBUTE, Helmet, Body } from "../../src";
 import { customRender } from "./utils";
 import { BodyProps } from "../../src/types";
 
-type BodyPropKey = keyof BodyProps;
+type BodyExtendedProps = BodyProps & {"data-animal-type": string, "data-dropzone": string}
+
+type BodyPropKey = keyof BodyExtendedProps;
 type AttributeTestData<T extends BodyPropKey> = {
   name: Exclude<T, number>;
-  value: BodyProps[T];
+  value: BodyExtendedProps[T];
   htmlName?: keyof HTMLBodyElement | string;
   expectedValue?: string;
 };
+
 type AttributeTestDataMap = {
   [Property in BodyPropKey]: AttributeTestData<Property>;
 };
@@ -21,10 +24,10 @@ describe("body attributes", () => {
       { name: "className", value: "test" },
       { name: "contentEditable", value: true, expectedValue: "true" },
       { name: "contextMenu", value: "mymenu" },
-      { name: "animal-type", value: "lion" },
+      { name: "data-animal-type", value: "lion" },
       { name: "dir", value: "rtl" },
       { name: "draggable", value: true, expectedValue: "true" },
-      { name: "dropzone", value: "copy" },
+      { name: "data-dropzone", value: "copy" },
       { name: "hidden", value: true },
       { name: "id", value: "test" },
       { name: "lang", value: "fr" },
@@ -56,7 +59,6 @@ describe("body attributes", () => {
   });
 
   it("updates multiple body attributes", () => {
-    1;
     customRender(
       <Helmet>
         <Body className="myClassName" tabIndex={-1} />
@@ -103,12 +105,10 @@ describe("body attributes", () => {
 
   it("clears body attributes that are handled within helmet", () => {
     customRender(
-      <>
         <Helmet>
           <Body lang="en" hidden />
-        </Helmet>
+        </Helmet>,
         <Helmet />
-      </>
     );
 
     const bodyTag = document.body;
@@ -163,7 +163,7 @@ describe("body attributes", () => {
   describe("initialized outside of helmet", () => {
     beforeEach(() => {
       const bodyTag = document.body;
-      bodyTag.setAttribute("test", "test");
+      bodyTag.setAttribute("data-test", "test");
     });
 
     it("attributes are not cleared", () => {
@@ -171,36 +171,33 @@ describe("body attributes", () => {
 
       const bodyTag = document.body;
 
-      expect(bodyTag.getAttribute("test")).toBe("test");
+      expect(bodyTag.getAttribute("data-test")).toBe("test");
       expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBeNull();
     });
 
     it("attributes are overwritten if specified in helmet", () => {
       customRender(
         <Helmet>
-          <Body test="helmet-attr" />
+          <Body data-test="helmet-attr" />
         </Helmet>
       );
 
       const bodyTag = document.body;
-
-      expect(bodyTag.getAttribute("test")).toBe("helmet-attr");
+      expect(bodyTag.getAttribute("data-test")).toBe("helmet-attr");
       expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
     });
 
     it("attributes are cleared once managed in helmet", () => {
-      customRender(
-        <>
-          <Helmet>
-            <Body test="helmet-attr" />
-          </Helmet>
-          <Helmet />
-        </>
+     customRender(
+        <Helmet>
+          <Body data-test="helmet-attr" />
+        </Helmet>,
+        <Helmet />
       );
-
+     
       const bodyTag = document.body;
 
-      expect(bodyTag.getAttribute("test")).toBeNull();
+      expect(bodyTag.getAttribute("data-test")).toBeNull();
       expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBeNull();
     });
   });

@@ -4,12 +4,11 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
-import { DOCUMENT_TITLE_INSTANCE_ID, IHelmetInstanceState, IHelmetState } from "./types";
-import { removeAction, addAction, addUniqueItem } from "./utils";
+import {IHelmetInstanceState, IHelmetState } from "./types";
+import { removeAction, addAction } from "./utils";
 import { TagRender } from "./renders";
 
 interface IHelmetContextData {
@@ -27,9 +26,6 @@ const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
 
 export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({ children }) => {
   const [instances, setInstances] = useState<IHelmetInstanceState[]>();
-  const [currentTitle, setCurrentTitle] = useState<HTMLTitleElement | undefined>(
-    () => document.head.getElementsByTagName("title")[0]
-  );
   const [state, setState] = useState<IHelmetState | undefined>();
 
   const addInstance = useCallback<IHelmetContextData["addInstance"]>(
@@ -50,18 +46,6 @@ export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({ childre
       state: state,
     };
   }, [addInstance, removeInstance, setState, state]);
-
-  useEffect(() => {
-    if (currentTitle && !currentTitle.getAttribute("data-rh")) {
-      context.addInstance({
-        id: DOCUMENT_TITLE_INSTANCE_ID,
-        emptyState: false,
-        titleTags: [{ children: currentTitle.text }],
-      });
-      currentTitle.remove();
-      setCurrentTitle(undefined);
-    }
-  }, [currentTitle, setCurrentTitle, context.addInstance]);
 
   return (
     <HelmetContext.Provider value={context}>

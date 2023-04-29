@@ -1,7 +1,6 @@
-import { Dispatch, SetStateAction } from "react";
+import {Dispatch, ReactElement, ReactNode, SetStateAction} from "react";
 import {
   ArrayElement,
-  DOCUMENT_TITLE_INSTANCE_ID,
   IHelmetInstanceState,
   IHelmetState,
   IHelmetTags,
@@ -10,6 +9,7 @@ import {
   primaryLinkAttributes,
   primaryMetaAttributes,
 } from "./types";
+import {renderToStaticMarkup} from "react-dom/server";
 
 export const addUniqueItem = <T, K extends T[] | undefined>(
   items: K,
@@ -32,13 +32,13 @@ export const removeAction =
     action: Dispatch<SetStateAction<K>>,
     keySelector?: (item: T) => any
   ) =>
-  (item: T) => {
-    action(items => {
-      return keySelector !== undefined
-        ? (items?.filter(m => keySelector(m) !== keySelector(item)) as K)
-        : (items?.filter(m => m !== item) as K);
-    });
-  };
+    (item: T) => {
+      action(items => {
+        return keySelector !== undefined
+          ? (items?.filter(m => keySelector(m) !== keySelector(item)) as K)
+          : (items?.filter(m => m !== item) as K);
+      });
+    };
 export const addAction = <T, K extends T[] | undefined>(
   action: Dispatch<SetStateAction<K>>,
   keySelector?: (item: T) => any
@@ -50,10 +50,10 @@ export namespace _ {
   export type TSelector<T> = ((elem: T) => any) | keyof T;
 
   export const sortBy = <T, K extends T[] | undefined>(array: K, selector: TSelector<T>): K => {
-    if(array === undefined){
+    if (array === undefined) {
       return array;
     }
-    
+
     if (typeof selector === "function") {
       return array.sort((x, y) =>
         selector(x) > selector(y) ? 1 : selector(x) < selector(y) ? -1 : 0
@@ -144,6 +144,7 @@ const mergeAllToOne = <T extends keyof IHelmetTags, TElement extends ArrayElemen
   key: T,
   result: TElement | undefined,
   instance: IHelmetInstanceState,
+  usePrevResult?: boolean,
   emptyStateFallback?: (result: TElement | undefined) => TElement | undefined
 ): TElement | undefined => {
   if (instance.emptyState) {
@@ -156,7 +157,7 @@ const mergeAllToOne = <T extends keyof IHelmetTags, TElement extends ArrayElemen
 
   const values = instance[key] as TElement[] | undefined;
   return (values || []).reduce((prev, current) => {
-    return { ...current };
+    return usePrevResult ? {...prev, ...current} : {...current};
   }, result);
 };
 
@@ -165,14 +166,13 @@ const mergeAllToAll = <T extends keyof IHelmetTags, TElement extends ArrayElemen
   result: TElement[],
   instance: IHelmetInstanceState
 ): TElement[] => {
-
   if (instance.emptyState) {
     _.clear(result);
   }
-  
+
   if (instance[key]) {
-      const values = instance[key] as TElement[];
-      result.push(...values);
+    const values = instance[key] as TElement[];
+    result.push(...values);
   }
 
   return result;
@@ -186,21 +186,21 @@ const mergeAllByPrimaryAttribute = <T extends keyof IHelmetTags, TElement = IHel
 ) => {
   if (instance.emptyState) {
     _.clear(result);
-  }else {
+  } else {
     const instanceInputTags = instance[tagProp] as TElement[] | undefined;
     if (instanceInputTags) {
       if (result.length === 0) {
         result.push(...instanceInputTags);
       } else {
         const instanceGrouped = _.groupBy(
-            instanceInputTags,
-            primaryAttributeSelector,
-            (item, index) => [item, index] as [TElement, number]
+          instanceInputTags,
+          primaryAttributeSelector,
+          (item, index) => [item, index] as [TElement, number]
         );
         const resultGrouped = _.groupBy(
-            result,
-            primaryAttributeSelector,
-            (item, index) => [item, index] as [TElement, number]
+          result,
+          primaryAttributeSelector,
+          (item, index) => [item, index] as [TElement, number]
         );
 
         for (const [attr, instanceTags] of instanceGrouped.entries()) {
@@ -240,15 +240,12 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
     noscriptTags: [],
   };
 
-  const documentTitleInstance = instances.find(m => m.id == DOCUMENT_TITLE_INSTANCE_ID);
-
-  const titleEmptyStateFallback = (result: IHelmetState["titleTag"]) =>
-    documentTitleInstance !== undefined && documentTitleInstance.titleTags !== undefined
-      ? documentTitleInstance.titleTags[0]
-      : result;
+  const titleEmptyStateFallback = (result: IHelmetState["titleTag"]) => {
+    return {children: result?.children}
+  };
 
   for (const instance of instances) {
-    state.titleTag = mergeAllToOne("titleTags", state.titleTag, instance, titleEmptyStateFallback);
+    state.titleTag = mergeAllToOne("titleTags", state.titleTag, instance, true, titleEmptyStateFallback);
     state.baseTag = mergeAllToOne("baseTags", state.baseTag, instance);
     state.bodyTag = mergeAllToOne("bodyTags", state.bodyTag, instance);
     state.htmlTag = mergeAllToOne("htmlTags", state.htmlTag, instance);
@@ -271,3 +268,37 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
 
   return state;
 };
+
+const parser = new DOMParser();
+
+export const renderToHtmlMarkup = (node: ReactElement) => {
+  return renderToStaticMarkup(node);
+}
+
+export const renderToHtmlElement = (node: ReactElement, selector: keyof HTMLElementTagNameMap) => {
+  const htmlMarkup = renderToHtmlMarkup(node);
+  const parsed = parser.parseFromString(htmlMarkup, "application/xml");
+  const element = parsed.querySelector(selector);
+  if (element == null) {
+    throw new Error(`Couldn't found element ${selector} in the ${htmlMarkup}`)
+  }
+
+  return element;
+}
+
+export const getHtmlAttributesFromHtmlElement = <T extends Element>(htmlElement: T) => {
+  return htmlElement.getAttributeNames().reduce((result, attrName) => {
+    const attrValue = htmlElement.getAttribute(attrName);
+    if (attrValue !== null) {
+      result.push({name: attrName, value: attrValue});
+    }
+    return result;
+  }, [] as { name: string, value: string }[])
+}
+
+export const getHtmlAttributesFromReactElement = <T extends ReactElement>(node: T, selector: keyof HTMLElementTagNameMap) => {
+  const htmlElement = renderToHtmlElement(node, selector);
+  return getHtmlAttributesFromHtmlElement(htmlElement)
+}
+
+
