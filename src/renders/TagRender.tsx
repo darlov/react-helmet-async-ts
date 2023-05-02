@@ -1,50 +1,33 @@
-import {FC, memo, useEffect} from "react";
-import {IHelmetInstanceState} from "../types";
+import {FC} from "react";
+import {IHelmetState} from "../types";
 import {MetaRender} from "./MetaRender";
 import {StyleRender} from "./StyleRender";
 import {ScriptRender} from "./ScriptRender";
 import {LinkRender} from "./LinkRender";
 import {NoscriptRender} from "./NoscriptRender";
-import {_, buildState} from "../utils";
-import {useHelmetContext} from "../HelmetProvider";
 import {HtmlAttributesRender} from "./HtmlAttributesRender";
 
 interface ITagRenderProps {
-  instances?: IHelmetInstanceState[];
+  state?: IHelmetState;
 }
 
-export const TagRender: FC<ITagRenderProps> = memo(({instances}) => {
-  const rootContext = useHelmetContext();
-
-  useEffect(() => {
-    if (instances && instances.length > 0) {
-      const orderedInstances = _.sortBy(instances, "id");
-      const state = buildState(orderedInstances);
-
-      rootContext.setState(state);
-    } else {
-      rootContext.setState(undefined);
-    }
-  }, [instances, rootContext.setState]);
-
-  if (rootContext.state) {
+export const TagRender: FC<ITagRenderProps> = ({state}) => {
+  if (state) {
     return (
       <>
-        <HtmlAttributesRender tag={rootContext.state.titleTag} tagName={"title"} attachTo={document.head}/>
-        <HtmlAttributesRender tag={rootContext.state.baseTag} tagName={"base"} attachTo={document.head}/>
-        <HtmlAttributesRender tag={rootContext.state.bodyTag} tagName={"body"} attachTo={document}/>
-        <HtmlAttributesRender tag={rootContext.state.htmlTag} tagName={"html"} attachTo={document}/>
+        <HtmlAttributesRender tag={state.titleTag} tagName={"title"} attachTo={document.head}/>
+        <HtmlAttributesRender tag={state.baseTag} tagName={"base"} attachTo={document.head}/>
+        <HtmlAttributesRender tag={state.bodyTag} tagName={"body"} attachTo={document}/>
+        <HtmlAttributesRender tag={state.htmlTag} tagName={"html"} attachTo={document}/>
 
-        <MetaRender tags={rootContext.state.metaTags}/>
-        <StyleRender tags={rootContext.state.styleTags}/>
-        <ScriptRender tags={rootContext.state.scriptTags}/>
-        <LinkRender tags={rootContext.state.linkTags}/>
-        <NoscriptRender tags={rootContext.state.noscriptTags}/>
+        <MetaRender tags={state.metaTags}/>
+        <StyleRender tags={state.styleTags}/>
+        <ScriptRender tags={state.scriptTags}/>
+        <LinkRender tags={state.linkTags}/>
+        <NoscriptRender tags={state.noscriptTags}/>
       </>
     );
   }
 
   return null;
-});
-
-TagRender.displayName = "TagRender";
+};

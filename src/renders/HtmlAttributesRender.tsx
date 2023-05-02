@@ -1,10 +1,9 @@
-import { createElement, FC, ReactElement, useEffect } from "react";
+import { FC, useEffect } from "react";
 import { TagProps } from "../types";
 import {
   getHtmlAttributesFromHtmlElement,
-  getHtmlAttributesFromReactElement,
   renderToHtmlElement,
-  renderToHtmlMarkup,
+   createComponent,
 } from "../utils";
 
 interface IDocumentElementRenderProps {
@@ -51,7 +50,7 @@ export const HtmlAttributesRender: FC<IDocumentElementRenderProps> = ({
   useEffect(() => {
     if (tag !== undefined) {
       const htmlElement = renderToHtmlElement(
-        createElement(tagName, { ...tag, "data-rh": true }),
+        createComponent(tagName, tag),
         tagName
       );
       const [isCreated, attachedHtmlElement] = getOrCreateHtmlElement(
@@ -62,7 +61,7 @@ export const HtmlAttributesRender: FC<IDocumentElementRenderProps> = ({
       const attributes = getHtmlAttributesFromHtmlElement(htmlElement);
 
       attributes.forEach(attr => attachedHtmlElement.setAttribute(attr.name, attr.value));
-      
+
       if(tag.children !== undefined){
         attachedHtmlElement.innerHTML = htmlElement.innerHTML;
       }

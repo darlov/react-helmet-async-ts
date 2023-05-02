@@ -1,3 +1,5 @@
+import {ReactElement} from "react";
+
 export type TitleProps = JSX.IntrinsicElements['title'];
 export type MetaProps = JSX.IntrinsicElements['meta'];
 export type StyleProps = JSX.IntrinsicElements['style'];
@@ -8,7 +10,16 @@ export type BaseProps = JSX.IntrinsicElements['base'];
 export type BodyProps = JSX.IntrinsicElements['body'];
 export type HtmlProps = JSX.IntrinsicElements['html'];
 
-export type TagProps = TitleProps | MetaProps | StyleProps | ScriptProps | LinkProps | NoscriptProps | BaseProps | BodyProps | HtmlProps;
+export type TagProps =
+  TitleProps
+  | MetaProps
+  | StyleProps
+  | ScriptProps
+  | LinkProps
+  | NoscriptProps
+  | BaseProps
+  | BodyProps
+  | HtmlProps;
 
 export interface IHelmetTags {
   titleTags?: TitleProps[],
@@ -37,6 +48,27 @@ export interface IHelmetState {
   scriptTags: ScriptProps[],
   linkTags: LinkProps[],
   noscriptTags: NoscriptProps[],
+}
+
+export interface IHelmetDatum<T> {
+  toComponent: () => T;
+  toString: () => string;
+}
+
+export interface IHelmetServerState {
+  title: IHelmetDatum<ReactElement>,
+  base: IHelmetDatum<ReactElement>,
+  body: IHelmetDatum<Required<IHelmetState>["bodyTag"]>,
+  html: IHelmetDatum<Required<IHelmetState>["htmlTag"]>
+  meta: IHelmetDatum<ReactElement[]>
+  style: IHelmetDatum<ReactElement[]>,
+  script: IHelmetDatum<ReactElement[]>,
+  link: IHelmetDatum<ReactElement[]>,
+  noscript: IHelmetDatum<ReactElement[]>,
+}
+
+export interface IHelmetData {
+  state?: IHelmetServerState;
 }
 
 export type OnChangeClientState = (newState: IHelmetState, addedTags: IHelmetTags, removedTags: IHelmetTags) => void;

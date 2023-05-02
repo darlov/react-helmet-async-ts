@@ -3,28 +3,28 @@ import {
   FC,
   ReactNode,
   useCallback,
-  useContext,
+  useContext, useEffect,
   useMemo,
   useState,
 } from "react";
-import {IHelmetInstanceState, IHelmetState } from "./types";
-import { removeAction, addAction } from "./utils";
-import { TagRender } from "./renders";
+import {IHelmetData, IHelmetInstanceState, IHelmetState} from "./types";
+import {removeAction, addAction, _, buildState, buildServerState} from "./utils";
+import {TagRender} from "./renders";
 
 interface IHelmetContextData {
   addInstance: (state: IHelmetInstanceState) => void;
   removeInstance: (state: IHelmetInstanceState) => void;
-  setState: (state?: IHelmetState) => void;
-  readonly state?: IHelmetState;
 }
 
 interface IHelmetContextProviderProps {
+  data?: IHelmetData,
   children?: ReactNode;
+  canUseDOM?: boolean;
 }
 
 const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
 
-export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({ children }) => {
+export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({data, children, canUseDOM = typeof document !== 'undefined'}) => {
   const [instances, setInstances] = useState<IHelmetInstanceState[]>();
   const [state, setState] = useState<IHelmetState | undefined>();
 
@@ -41,18 +41,33 @@ export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({ childre
   const context = useMemo<IHelmetContextData>(() => {
     return {
       addInstance: addInstance,
-      removeInstance: removeInstance,
-      setState: setState,
-      state: state,
+      removeInstance: removeInstance
     };
-  }, [addInstance, removeInstance, setState, state]);
+  }, [addInstance, removeInstance]);
+
+  useEffect(() => {
+    if (instances && instances.length > 0) {
+      const orderedInstances = _.sortBy(instances, "id");
+      const state = buildState(orderedInstances);
+      
+      if(!canUseDOM && data){
+        data.state = buildServerState(state)
+      }
+
+      setState(state);
+    } else {
+      setState(undefined);
+    }
+  }, [instances, setState]);
+
 
   return (
-    <HelmetContext.Provider value={context}>
-      <TagRender instances={instances} />
-      {children}
-  
-    </HelmetContext.Provider>
+    <>
+      <HelmetContext.Provider value={context}>
+        {children}
+      </HelmetContext.Provider>
+      <TagRender state={state}/>
+    </>
   );
 };
 

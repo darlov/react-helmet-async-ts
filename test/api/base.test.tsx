@@ -23,16 +23,14 @@ describe("base tag", () => {
 
     it("clears the base tag if one is not specified", () => {
       customRender(
-        <>
           <Helmet>
             <Base href="http://mysite.com/" />
-          </Helmet>
+          </Helmet>,
           <Helmet />
-        </>
       );
 
       const existingTags = document.head.querySelectorAll(`base[${HELMET_ATTRIBUTE}]`);
-      console.log( document.head.outerHTML);
+
       expect(existingTags).toBeDefined();
       expect(existingTags).toHaveLength(0);
     });
@@ -45,7 +43,7 @@ describe("base tag", () => {
       );
 
       const existingTags = document.head.querySelectorAll(`base[${HELMET_ATTRIBUTE}]`);
-      console.log( document.head.outerHTML);
+
       expect(existingTags).toBeDefined();
       expect(existingTags).toHaveLength(0);
     });

@@ -1,13 +1,13 @@
-import {Dispatch, ReactElement, ReactNode, SetStateAction} from "react";
+import {createElement, Dispatch, ReactElement, ReactNode, SetStateAction} from "react";
 import {
-  ArrayElement,
-  IHelmetInstanceState,
+  ArrayElement, IHelmetDatum,
+  IHelmetInstanceState, IHelmetServerState,
   IHelmetState,
   IHelmetTags,
   LinkProps,
   MetaProps,
   primaryLinkAttributes,
-  primaryMetaAttributes,
+  primaryMetaAttributes, TagProps,
 } from "./types";
 import {renderToStaticMarkup} from "react-dom/server";
 
@@ -65,7 +65,7 @@ export namespace _ {
     ) as K;
   };
 
-  export const clear = <T>(array: T[] | undefined) => {
+  export const clear = <T,>(array: T[] | undefined) => {
     if (array !== undefined && array.length > 0) {
       array.splice(0, array.length);
     }
@@ -241,7 +241,7 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
   };
 
   const titleEmptyStateFallback = (result: IHelmetState["titleTag"]) => {
-    return {children: result?.children}
+    return result !== undefined ? {children: result.children} : undefined
   };
 
   for (const instance of instances) {
@@ -269,6 +269,58 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
   return state;
 };
 
+export const buildServerState = (state: IHelmetState): IHelmetServerState => {
+  
+  const titleComponent = state.titleTag ? createComponent("title", state.titleTag) : <></>;
+  const baseComponent = state.baseTag ? createComponent("base", state.baseTag) : <></>;
+  const bodyComponent = state.bodyTag ? createComponent("body", state.bodyTag) : <></>;
+  const htmlComponent = state.htmlTag ? createComponent("html", state.htmlTag) : <></>;
+  const metaComponents = state.metaTags.map((m, i) => createComponent("meta", {...m, key: i}));
+  const styleComponents = state.styleTags.map((m, i) => createComponent("style", {...m, key: i}));
+  const scriptComponents = state.scriptTags.map((m, i) => createComponent("script", {...m, key: i}));
+  const linkComponents = state.linkTags.map((m, i) => createComponent("link", {...m, key: i}));
+  const noscriptComponents = state.metaTags.map((m, i) => createComponent("noscript", {...m, key: i}));
+
+  return {
+    title: {
+      toComponent: () => titleComponent,
+      toString: () => renderToStaticMarkup(titleComponent)
+    },
+    base: {
+      toComponent: () => baseComponent,
+      toString: () => renderToStaticMarkup(baseComponent)
+    },
+    body: {
+      toComponent: () => bodyComponent.props ?? {},
+      toString: () => renderToStaticMarkup(bodyComponent).replace("<body ", "").replace("></body>", "")
+    },
+    html: {
+      toComponent: () => htmlComponent.props ?? {},
+      toString: () => renderToStaticMarkup(htmlComponent).replace("<html ", "").replace("></html>", "")
+    },
+    meta: {
+      toComponent: () => metaComponents,
+      toString: () => renderToStaticMarkup(<>{metaComponents}</>)
+    },
+    style: {
+      toComponent: () => styleComponents,
+      toString: () => renderToStaticMarkup(<>{styleComponents}</>)
+    },
+    script: {
+      toComponent: () => scriptComponents,
+      toString: () => renderToStaticMarkup(<>{scriptComponents}</>)
+    },
+    link: {
+      toComponent: () => linkComponents,
+      toString: () => renderToStaticMarkup(<>{linkComponents}</>)
+    },
+    noscript: {
+      toComponent: () => noscriptComponents,
+      toString: () => renderToStaticMarkup(<>{noscriptComponents}</>)
+    },
+  }
+}
+
 const parser = new DOMParser();
 
 export const renderToHtmlMarkup = (node: ReactElement) => {
@@ -284,6 +336,10 @@ export const renderToHtmlElement = (node: ReactElement, selector: keyof HTMLElem
   }
 
   return element;
+}
+
+export const createComponent = (tagName: keyof HTMLElementTagNameMap, tagProps: TagProps) => {
+  return createElement(tagName, {...tagProps, "data-rh": true})
 }
 
 export const getHtmlAttributesFromHtmlElement = <T extends Element>(htmlElement: T) => {

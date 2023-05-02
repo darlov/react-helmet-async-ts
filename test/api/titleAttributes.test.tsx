@@ -64,7 +64,7 @@ describe("title attributes", () => {
 
       expect(titleTag.getAttribute("lang")).toBeNull();
       expect(titleTag.getAttribute("hidden")).toBeNull();
-      expect(titleTag.getAttribute(HELMET_ATTRIBUTE)).toBeNull();
+      expect(titleTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
     });
   });
 });
