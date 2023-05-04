@@ -2,71 +2,52 @@ import {
   createContext,
   FC,
   ReactNode,
-  useCallback,
-  useContext, useEffect,
+  useContext,
   useMemo,
-  useState,
 } from "react";
-import {IHelmetData, IHelmetInstanceState, IHelmetState} from "./types";
-import {removeAction, addAction, _, buildState, buildServerState} from "./utils";
+import {IHelmetInstanceState, UpdateInstanceCallback} from "./types";
 import {TagRender} from "./renders";
+import {HelmetData} from "./HelmetData";
+import {useForceUpdate} from "./hooks/useForceUpdate";
 
 interface IHelmetContextData {
   addInstance: (state: IHelmetInstanceState) => void;
   removeInstance: (state: IHelmetInstanceState) => void;
+  addInstanceItems: UpdateInstanceCallback,
+  canUseDOM: boolean;
 }
 
 interface IHelmetContextProviderProps {
-  data?: IHelmetData,
+  data?: HelmetData,
   children?: ReactNode;
   canUseDOM?: boolean;
 }
 
 const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
 
-export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({data, children, canUseDOM = typeof document !== 'undefined'}) => {
-  const [instances, setInstances] = useState<IHelmetInstanceState[]>();
-  const [state, setState] = useState<IHelmetState | undefined>();
-
-  const addInstance = useCallback<IHelmetContextData["addInstance"]>(
-    addAction(setInstances, m => m.id),
-    [setInstances]
-  );
-
-  const removeInstance = useCallback<IHelmetContextData["removeInstance"]>(
-    removeAction(setInstances, m => m.id),
-    [setInstances]
-  );
-
+export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({data = new HelmetData(), children}) => {
+  const forceUpdate = useForceUpdate()
+  
   const context = useMemo<IHelmetContextData>(() => {
     return {
-      addInstance: addInstance,
-      removeInstance: removeInstance
+      addInstance: (instance) => {
+        data.addInstance(instance)
+        forceUpdate();
+      },
+      removeInstance:  (instance) => {
+        data.removeInstance(instance)
+        forceUpdate();
+      },
+      canUseDOM: data.canUseDOM
     };
-  }, [addInstance, removeInstance]);
-
-  useEffect(() => {
-    if (instances && instances.length > 0) {
-      const orderedInstances = _.sortBy(instances, "id");
-      const state = buildState(orderedInstances);
-      
-      if(!canUseDOM && data){
-        data.state = buildServerState(state)
-      }
-
-      setState(state);
-    } else {
-      setState(undefined);
-    }
-  }, [instances, setState]);
-
+  }, [data]);
 
   return (
     <>
       <HelmetContext.Provider value={context}>
         {children}
       </HelmetContext.Provider>
-      <TagRender state={state}/>
+      {data.canUseDOM && <TagRender state={data.helmetState}/>}
     </>
   );
 };

@@ -82,3 +82,8 @@ export const primaryLinkAttributes: readonly LinkAttribute[] = ["rel", "href"] a
 
 export const HELMET_ATTRIBUTE = 'data-rh';
 
+
+export type UpdateInstanceCallback<T extends IHelmetInstanceState = IHelmetInstanceState, K extends keyof T = keyof T> = (state: T, propName: K, values: T[K]) => void;
+
+
+

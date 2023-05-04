@@ -1,14 +1,15 @@
 import {renderToStaticMarkup} from 'react-dom/server';
 import {Base, Helmet, IHelmetData} from '../../src';
 import {render} from './utils';
+import {HelmetData} from "../../src/HelmetData";
 
 describe('server', () => {
   describe('Declarative API', () => {
     it('renders base tag as React component', () => {
-      const context: IHelmetData = {};
+      const context: HelmetData = new HelmetData(false);
       render(
         <Helmet>
-          <Base target="_blank" href="http://localhost/"/>
+          <base target="_blank" href="http://localhost/"/>
         </Helmet>,
         context
       );
@@ -30,10 +31,10 @@ describe('server', () => {
     });
 
     it('renders base tags as string', () => {
-      const context: IHelmetData = {};
+      const context: HelmetData = new HelmetData(false);
       render(
         <Helmet>
-          <Base target="_blank" href="http://localhost/"/>
+          <base target="_blank" href="http://localhost/"/>
         </Helmet>,
         context
       );

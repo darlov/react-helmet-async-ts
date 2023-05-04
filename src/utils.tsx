@@ -27,17 +27,23 @@ export const addUniqueItem = <T, K extends T[] | undefined>(
   return exist ? items : ([...items, item] as K);
 };
 
+export const removeItem = <T, K extends T[] | undefined>(
+  items: K,
+  item: T,
+  keySelector?: (item: T) => any
+): K => {
+  return keySelector !== undefined
+    ? (items?.filter(m => keySelector(m) !== keySelector(item)) as K)
+    : (items?.filter(m => m !== item) as K);
+}
+
 export const removeAction =
   <T, K extends T[] | undefined>(
     action: Dispatch<SetStateAction<K>>,
     keySelector?: (item: T) => any
   ) =>
     (item: T) => {
-      action(items => {
-        return keySelector !== undefined
-          ? (items?.filter(m => keySelector(m) !== keySelector(item)) as K)
-          : (items?.filter(m => m !== item) as K);
-      });
+      action(items => removeItem(items, item, keySelector));
     };
 export const addAction = <T, K extends T[] | undefined>(
   action: Dispatch<SetStateAction<K>>,
@@ -321,13 +327,12 @@ export const buildServerState = (state: IHelmetState): IHelmetServerState => {
   }
 }
 
-const parser = new DOMParser();
-
 export const renderToHtmlMarkup = (node: ReactElement) => {
   return renderToStaticMarkup(node);
 }
 
 export const renderToHtmlElement = (node: ReactElement, selector: keyof HTMLElementTagNameMap) => {
+  const parser = new DOMParser();
   const htmlMarkup = renderToHtmlMarkup(node);
   const parsed = parser.parseFromString(htmlMarkup, "application/xml");
   const element = parsed.querySelector(selector);
