@@ -1,9 +1,10 @@
-import {Children, FC, isValidElement, ReactNode, useEffect, useId, useMemo} from "react";
+import {FC, ReactNode, useEffect, useId, useMemo} from "react";
 import {
   IHelmetInstanceState,
 } from "./types";
 import {useHelmetContext} from "./HelmetProvider";
 import {Base, Title} from "./tags";
+import {createActionsData, HelmetScopedContext, IHelmetScopedContextData} from "./HelmetScopedProvider";
 
 interface IHelmetProps {
   defaultTitle?: ReactNode,
@@ -20,7 +21,7 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
   const instanceState = useMemo<IHelmetInstanceState>(() => {
     return {
       id,
-      emptyState: false,
+      emptyState: false
     }
   }, [id])
 
@@ -33,21 +34,25 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
     rootContext.addInstance(instanceState);
   }
 
-  const childElements = Children.map(children, (node) => {
-    if (isValidElement(node)) {
-      if (node.type == "base") {
-        return (<Base key={node.key} {...node.props} instance={instanceState}/>)
-      }
+  const context = useMemo<IHelmetScopedContextData>(() => {
+    return {
+      baseActions: createActionsData(instanceState, "baseTags", rootContext),
+      htmlActions: createActionsData(instanceState, "htmlTags", rootContext),
+      bodyActions: createActionsData(instanceState, "bodyTags", rootContext),
+      scriptActions: createActionsData(instanceState, "scriptTags", rootContext),
+      noscriptActions: createActionsData(instanceState, "noscriptTags", rootContext),
+      styleActions: createActionsData(instanceState, "styleTags", rootContext),
+      titleActions: createActionsData(instanceState, "titleTags", rootContext),
+      metaActions: createActionsData(instanceState, "metaTags", rootContext),
+      linkActions: createActionsData(instanceState, "linkTags", rootContext)      
     }
-
-    return node;
-  })
+  }, [instanceState, rootContext.addItem, rootContext.removeItem])
 
   return (
-    <>
+    <HelmetScopedContext.Provider value={context}>
       {defaultTitle && <Title>{defaultTitle}</Title>}
-      {childElements}
-    </>);
+      {children}
+    </HelmetScopedContext.Provider>);
 }
 
 Helmet.displayName = "Helmet";

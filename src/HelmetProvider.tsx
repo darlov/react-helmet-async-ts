@@ -5,7 +5,7 @@ import {
   useContext,
   useMemo,
 } from "react";
-import {IHelmetInstanceState, UpdateInstanceCallback} from "./types";
+import {IHelmetDataContext, IHelmetInstanceState, UpdateInstanceCallback} from "./types";
 import {TagRender} from "./renders";
 import {HelmetData} from "./HelmetData";
 import {useForceUpdate} from "./hooks/useForceUpdate";
@@ -13,21 +13,23 @@ import {useForceUpdate} from "./hooks/useForceUpdate";
 interface IHelmetContextData {
   addInstance: (state: IHelmetInstanceState) => void;
   removeInstance: (state: IHelmetInstanceState) => void;
-  addInstanceItems: UpdateInstanceCallback,
+  addItem: UpdateInstanceCallback,
+  removeItem: UpdateInstanceCallback
   canUseDOM: boolean;
 }
 
 interface IHelmetContextProviderProps {
-  data?: HelmetData,
+  value?: IHelmetDataContext,
   children?: ReactNode;
   canUseDOM?: boolean;
 }
 
 const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
 
-export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({data = new HelmetData(), children}) => {
+export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, canUseDOM, children}) => {
   const forceUpdate = useForceUpdate()
   
+  const data = useMemo(() => new HelmetData(value, canUseDOM), [value, canUseDOM])
   const context = useMemo<IHelmetContextData>(() => {
     return {
       addInstance: (instance) => {
@@ -38,7 +40,15 @@ export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({data = n
         data.removeInstance(instance)
         forceUpdate();
       },
-      canUseDOM: data.canUseDOM
+      addItem: (instance, propName, value) => {
+        data.addItem(instance, propName, value);
+        forceUpdate();
+      },
+      removeItem: (instance, propName, value) => {
+        data.removeItem(instance, propName, value);
+        forceUpdate();
+      },
+      canUseDOM: data.canUseDOM,
     };
   }, [data]);
 

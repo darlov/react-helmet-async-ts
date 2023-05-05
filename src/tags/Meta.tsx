@@ -1,20 +1,13 @@
-import { FC, memo, useEffect } from "react";
+import { FC, memo } from "react";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 import { MetaProps, primaryMetaAttributes } from "../types";
+import {CommonTag} from "./CommonTag";
 
-const isMetaValid = (meta: MetaProps) => primaryMetaAttributes.some(attr => meta[attr] !== undefined)
+const isValid = (meta: MetaProps) => primaryMetaAttributes.some(attr => meta[attr] !== undefined)
 
 const MetaTag: FC<MetaProps> = (props) => {
-  const actions = useScopedHelmetContext().metaActions;
-
-  useEffect(() => {
-    if(isMetaValid(props)) {
-      actions.add(props);
-      return () => actions.remove(props);
-    }
-  },[props, actions.add, actions.remove])
-  
-  return null;
+  const actions = useScopedHelmetContext().metaActions;  
+  return <CommonTag tagProps={props} actions={actions} isValid={isValid}/>;
 }
 
 export const Meta = memo(MetaTag);

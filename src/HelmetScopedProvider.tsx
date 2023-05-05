@@ -1,26 +1,32 @@
 import { createContext, Dispatch, SetStateAction, useContext } from "react";
 import {
   BaseProps,
-  BodyProps, HtmlProps,
+  BodyProps, HtmlProps, IHelmetInstanceState,
   LinkProps,
   MetaProps,
   NoscriptProps,
   ScriptProps,
   StyleProps,
   TagProps,
-  TitleProps
+  TitleProps, UpdateInstanceCallback
 } from "./types";
 import { addAction, removeAction } from "./utils";
+import {HelmetData} from "./HelmetData";
 
 export interface ITagsActions<T extends TagProps> {
-  add: (title: T) => void;
-  remove: (title: T) => void;
+  add: (tag: T) => void;
+  remove: (tag: T) => void;
 }
 
-export const createActionsData = <T extends TagProps, K extends T[] | undefined, >(action: Dispatch<SetStateAction<K>>): ITagsActions<T> => {
+export const createActionsData = <
+  T extends TagProps,
+>(
+  instance: IHelmetInstanceState,
+  propName: keyof Omit<IHelmetInstanceState, "id" | "emptyState">,
+  context:{addItem: UpdateInstanceCallback, removeItem: UpdateInstanceCallback }): ITagsActions<T> => {
   return {
-    add: addAction(action),
-    remove: removeAction(action)
+    add: (value) => context.addItem(instance, propName, value),
+    remove: (value) => context.removeItem(instance, propName, value)
   }
 }
 

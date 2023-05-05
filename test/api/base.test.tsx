@@ -6,7 +6,7 @@ describe("base tag", () => {
     it("updates base tag", () => {
       customRender(
         <Helmet>
-          <base href="http://mysite.com/" />
+          <Base href="http://mysite.com/" />
         </Helmet>
       );
 

@@ -71,7 +71,7 @@ export namespace _ {
     ) as K;
   };
 
-  export const clear = <T,>(array: T[] | undefined) => {
+  export const clear = <T, >(array: T[] | undefined) => {
     if (array !== undefined && array.length > 0) {
       array.splice(0, array.length);
     }
@@ -251,6 +251,9 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
   };
 
   for (const instance of instances) {
+    instance.emptyState = _.isEmptyArray(instance.titleTags, instance.linkTags, instance.baseTags, instance.bodyTags,
+      instance.htmlTags, instance.styleTags, instance.scriptTags, instance.noscriptTags, instance.metaTags, instance.linkTags);
+
     state.titleTag = mergeAllToOne("titleTags", state.titleTag, instance, true, titleEmptyStateFallback);
     state.baseTag = mergeAllToOne("baseTags", state.baseTag, instance);
     state.bodyTag = mergeAllToOne("bodyTags", state.bodyTag, instance);
@@ -276,7 +279,7 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
 };
 
 export const buildServerState = (state: IHelmetState): IHelmetServerState => {
-  
+
   const titleComponent = state.titleTag ? createComponent("title", state.titleTag) : <></>;
   const baseComponent = state.baseTag ? createComponent("base", state.baseTag) : <></>;
   const bodyComponent = state.bodyTag ? createComponent("body", state.bodyTag) : <></>;
@@ -285,7 +288,7 @@ export const buildServerState = (state: IHelmetState): IHelmetServerState => {
   const styleComponents = state.styleTags.map((m, i) => createComponent("style", {...m, key: i}));
   const scriptComponents = state.scriptTags.map((m, i) => createComponent("script", {...m, key: i}));
   const linkComponents = state.linkTags.map((m, i) => createComponent("link", {...m, key: i}));
-  const noscriptComponents = state.metaTags.map((m, i) => createComponent("noscript", {...m, key: i}));
+  const noscriptComponents = state.noscriptTags.map((m, i) => createComponent("noscript", {...m, key: i}));
 
   return {
     title: {

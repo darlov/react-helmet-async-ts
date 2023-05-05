@@ -1,16 +1,16 @@
 // @vitest-environment node
-import {Helmet, IHelmetData, Noscript} from '../../src';
+import {Helmet, IHelmetDataContext, Noscript} from '../../src';
 import { render } from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
   describe('Declarative API', () => {
     it('renders noscript tags as React components', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
-          <Noscript id="foo">{`<link rel="stylesheet" type="text/css" href="/style.css" />`}</Noscript>
-          <Noscript id="bar">{`<link rel="stylesheet" type="text/css" href="/style2.css" />`}</Noscript>
+          <Noscript id="foo"><link rel="stylesheet" type="text/css" href="/style.css" /></Noscript>
+          <Noscript id="bar"><link rel="stylesheet" type="text/css" href="/style2.css" /></Noscript>
         </Helmet>,
         context
       );
@@ -29,7 +29,7 @@ describe('server', () => {
         expect(noscript).toEqual(expect.objectContaining({ type: 'noscript' }));
       });
 
-      const markup = renderToStaticMarkup(<>noscriptComponent</>);
+      const markup = renderToStaticMarkup(<>{noscriptComponent}</>);
 
       expect(markup).toMatchSnapshot();
     });

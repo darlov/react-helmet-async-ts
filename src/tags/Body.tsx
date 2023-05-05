@@ -1,22 +1,12 @@
-import { FC, memo, useEffect } from "react";
+import { FC } from "react";
 import { BodyProps } from "../types";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 import { _ } from "../utils";
+import {CommonTag} from "./CommonTag";
 
 const isValid = (tag: BodyProps) => !_.isEmpty(tag);
 
-const BodyTag: FC<BodyProps> = props => {
+export const Body: FC<BodyProps> = props => {
   const actions = useScopedHelmetContext().bodyActions;
-
-  useEffect(() => {
-    if (isValid(props)) {
-      actions.add(props);
-      return () => actions.remove(props);
-    }
-  }, [props, actions.add, actions.remove]);
-
-  return null;
+  return <CommonTag tagProps={props} actions={actions} isValid={isValid}/>;
 };
-
-export const Body = BodyTag;
-Body.displayName = "Body";

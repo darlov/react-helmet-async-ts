@@ -1,0 +1,5 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`server > Declarative API > renders script tags as React components 1`] = `"<script src="http://localhost/test.js" type="text/javascript" data-rh="true"></script><script src="http://localhost/test2.js" type="text/javascript" data-rh="true"></script>"`;
+
+exports[`server > Declarative API > renders script tags as string 1`] = `"<script src="http://localhost/test.js" type="text/javascript" data-rh="true"></script><script src="http://localhost/test2.js" type="text/javascript" data-rh="true"></script>"`;

@@ -1,20 +1,13 @@
-import {FC, memo, useEffect} from "react";
+import {FC, memo} from "react";
 import {NoscriptProps} from "../types";
 import {useScopedHelmetContext} from "../HelmetScopedProvider";
+import {CommonTag} from "./CommonTag";
 
 const isValid = (tag: NoscriptProps) => tag.children !== undefined
 
 const NoscriptTag: FC<NoscriptProps> = (props) => {
     const actions = useScopedHelmetContext().noscriptActions;
-
-    useEffect(() => {
-        if (isValid(props)) {
-            actions.add(props);
-            return () => actions.remove(props);
-        }
-    }, [props, actions.add, actions.remove])
-
-    return null;
+    return <CommonTag tagProps={props} actions={actions} isValid={isValid}/>;;
 }
 
 export const Noscript = memo(NoscriptTag);

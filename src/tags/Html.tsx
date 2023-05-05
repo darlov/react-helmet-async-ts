@@ -1,22 +1,12 @@
-import { FC, memo, useEffect } from "react";
+import { FC } from "react";
 import { HtmlProps } from "../types";
 import { useScopedHelmetContext } from "../HelmetScopedProvider";
 import { _ } from "../utils";
+import {CommonTag} from "./CommonTag";
 
 const isValid = (tag: HtmlProps) => !_.isEmpty(tag);
 
-const HtmlTag: FC<HtmlProps> = props => {
+export const Html: FC<HtmlProps> = props => {
   const actions = useScopedHelmetContext().htmlActions;
-
-  useEffect(() => {
-    if (isValid(props)) {
-      actions.add(props);
-      return () => actions.remove(props);
-    }
-  }, [props, actions.add, actions.remove]);
-
-  return null;
+  return <CommonTag tagProps={props} actions={actions} isValid={isValid}/>;
 };
-
-export const Html = memo(HtmlTag);
-Html.displayName = "Html";

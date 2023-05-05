@@ -67,7 +67,7 @@ export interface IHelmetServerState {
   noscript: IHelmetDatum<ReactElement[]>,
 }
 
-export interface IHelmetData {
+export interface IHelmetDataContext {
   state?: IHelmetServerState;
 }
 
@@ -83,7 +83,10 @@ export const primaryLinkAttributes: readonly LinkAttribute[] = ["rel", "href"] a
 export const HELMET_ATTRIBUTE = 'data-rh';
 
 
-export type UpdateInstanceCallback<T extends IHelmetInstanceState = IHelmetInstanceState, K extends keyof T = keyof T> = (state: T, propName: K, values: T[K]) => void;
+export type UpdateInstanceCallback = <
+  T extends keyof Omit<IHelmetInstanceState, "id" | "emptyState">,
+  K extends NonNullable<IHelmetInstanceState[T]>
+>(instance: IHelmetInstanceState, propName: T, value: ArrayElement<K>) => void;
 
 
 

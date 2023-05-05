@@ -1,20 +1,13 @@
-import { FC, memo, useEffect } from "react";
-import { LinkProps, primaryLinkAttributes } from "../types";
-import { useScopedHelmetContext } from "../HelmetScopedProvider";
+import {FC, memo, useEffect} from "react";
+import {LinkProps, primaryLinkAttributes} from "../types";
+import {useScopedHelmetContext} from "../HelmetScopedProvider";
+import {CommonTag} from "./CommonTag";
 
-const isLinkValid = (link: LinkProps) => primaryLinkAttributes.every(attr => link[attr] !== undefined)
+const isValid = (link: LinkProps) => primaryLinkAttributes.every(attr => link[attr] !== undefined)
 
 const LinkTag: FC<LinkProps> = (props) => {
   const actions = useScopedHelmetContext().linkActions;
-
-  useEffect(() => {
-    if (isLinkValid(props)) {
-      actions.add(props);
-      return () => actions.remove(props);
-    }
-  }, [props, actions.add, actions.remove])
-
-  return null;
+  return <CommonTag tagProps={props} actions={actions} isValid={isValid}/>;
 }
 
 export const Link = memo(LinkTag);
