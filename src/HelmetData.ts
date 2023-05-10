@@ -11,7 +11,7 @@ export class HelmetData {
   private _helmetState?: IHelmetState;
 
   constructor(private _context?: IHelmetDataContext, private _canUseDOM = typeof document !== 'undefined') {
-
+    this.buildState();
   }
 
   get helmetState() {

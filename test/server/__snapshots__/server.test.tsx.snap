@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`server > API > rewind() provides a fallback object for empty Helmet state 1`] = `"<title data-rh="true"></title>"`;
+
+exports[`server > API > rewind() provides a fallback object for empty Helmet state 2`] = `"<title data-rh="true"></title>"`;
+
+exports[`server > Declarative API > does not render undefined attribute values 1`] = `"<script src="foo.js" data-rh="true"></script>"`;
+
+exports[`server > Declarative API > rewind() provides a fallback object for empty Helmet state 1`] = `"<title data-rh="true"></title>"`;
+
+exports[`server > Declarative API > rewind() provides a fallback object for empty Helmet state 2`] = `"<title data-rh="true"></title>"`;

@@ -1,14 +1,16 @@
-import {FC, ReactNode, useEffect, useId, useMemo} from "react";
+import {FC, ReactNode, useId, useMemo} from "react";
 import {
   IHelmetInstanceState,
 } from "./types";
 import {useHelmetContext} from "./HelmetProvider";
-import {Base, Title} from "./tags";
+import {Title} from "./tags";
 import {createActionsData, HelmetScopedContext, IHelmetScopedContextData} from "./HelmetScopedProvider";
+import {useServerSideEffect} from "./hooks/useServerSideEffect";
 
 interface IHelmetProps {
   defaultTitle?: ReactNode,
   children?: ReactNode
+  prioritizeSeoTags?: boolean
 }
 
 export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
@@ -19,20 +21,15 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
   }, [sourceId])
 
   const instanceState = useMemo<IHelmetInstanceState>(() => {
-    return {
-      id,
-      emptyState: false
-    }
+    return {id}
   }, [id])
 
-  useEffect(() => {
-    rootContext.addInstance(instanceState);
-    return () => rootContext.removeInstance(instanceState);
-  }, [instanceState, rootContext.addInstance, rootContext.removeInstance])
-
-  if (!rootContext.canUseDOM) {
-    rootContext.addInstance(instanceState);
-  }
+  useServerSideEffect(() => {
+      rootContext.addInstance(instanceState);
+      return () => rootContext.removeInstance(instanceState);
+    },
+    () => !rootContext.canUseDOM,
+    [instanceState, rootContext.addInstance, rootContext.removeInstance]);
 
   const context = useMemo<IHelmetScopedContextData>(() => {
     return {
@@ -44,7 +41,7 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
       styleActions: createActionsData(instanceState, "styleTags", rootContext),
       titleActions: createActionsData(instanceState, "titleTags", rootContext),
       metaActions: createActionsData(instanceState, "metaTags", rootContext),
-      linkActions: createActionsData(instanceState, "linkTags", rootContext)      
+      linkActions: createActionsData(instanceState, "linkTags", rootContext)
     }
   }, [instanceState, rootContext.addItem, rootContext.removeItem])
 

@@ -1,43 +1,28 @@
-import React from 'react';
-import ReactServer from 'react-dom/server';
-import { Helmet } from '../../src';
-import Provider from '../../src/Provider';
+import {Helmet, IHelmetDataContext, Link, Meta, Script} from '../../src';
 import { render } from './utils';
-
-Helmet.defaultProps.defer = false;
-
-beforeAll(() => {
-  Provider.canUseDOM = false;
-});
-
-afterAll(() => {
-  Provider.canUseDOM = true;
-});
-
-const isArray = {
-  asymmetricMatch: actual => Array.isArray(actual),
-};
+import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
   describe('API', () => {
     it('rewind() provides a fallback object for empty Helmet state', () => {
-      const context = {};
+      const context: IHelmetDataContext = {};
       render(<div />, context);
 
-      const head = context.helmet;
+      expect(context.state).toBeDefined();
+      const head = context.state!;
 
-      expect(head.htmlAttributes).toBeDefined();
-      expect(head.htmlAttributes.toString).toBeDefined();
-      expect(head.htmlAttributes.toString()).toBe('');
-      expect(head.htmlAttributes.toComponent).toBeDefined();
-      expect(head.htmlAttributes.toComponent()).toEqual({});
+      expect(head.html).toBeDefined();
+      expect(head.html.toString).toBeDefined();
+      expect(head.html.toString()).toBe('');
+      expect(head.html.toComponent).toBeDefined();
+      expect(head.html.toComponent()).toEqual({});
 
       expect(head.title).toBeDefined();
       expect(head.title.toString).toBeDefined();
       expect(head.title.toString()).toMatchSnapshot();
       expect(head.title.toComponent).toBeDefined();
 
-      const markup = ReactServer.renderToStaticMarkup(head.title.toComponent());
+      const markup = renderToStaticMarkup(head.title.toComponent());
 
       expect(markup).toMatchSnapshot();
 
@@ -48,8 +33,7 @@ describe('server', () => {
 
       const baseComponent = head.base.toComponent();
 
-      expect(baseComponent).toEqual(isArray);
-      expect(baseComponent).toHaveLength(0);
+      expect(baseComponent).toEqual(<></>);
 
       expect(head.meta).toBeDefined();
       expect(head.meta.toString).toBeDefined();
@@ -58,7 +42,6 @@ describe('server', () => {
 
       const metaComponent = head.meta.toComponent();
 
-      expect(metaComponent).toEqual(isArray);
       expect(metaComponent).toHaveLength(0);
 
       expect(head.link).toBeDefined();
@@ -68,7 +51,6 @@ describe('server', () => {
 
       const linkComponent = head.link.toComponent();
 
-      expect(linkComponent).toEqual(isArray);
       expect(linkComponent).toHaveLength(0);
 
       expect(head.script).toBeDefined();
@@ -78,7 +60,6 @@ describe('server', () => {
 
       const scriptComponent = head.script.toComponent();
 
-      expect(scriptComponent).toEqual(isArray);
       expect(scriptComponent).toHaveLength(0);
 
       expect(head.noscript).toBeDefined();
@@ -88,7 +69,6 @@ describe('server', () => {
 
       const noscriptComponent = head.noscript.toComponent();
 
-      expect(noscriptComponent).toEqual(isArray);
       expect(noscriptComponent).toHaveLength(0);
 
       expect(head.style).toBeDefined();
@@ -98,65 +78,48 @@ describe('server', () => {
 
       const styleComponent = head.style.toComponent();
 
-      expect(styleComponent).toEqual(isArray);
       expect(styleComponent).toHaveLength(0);
 
       expect(head.priority).toBeDefined();
       expect(head.priority.toString).toBeDefined();
       expect(head.priority.toString()).toBe('');
       expect(head.priority.toComponent).toBeDefined();
-    });
-
-    it('does not render undefined attribute values', () => {
-      const context = {};
-      render(
-        <Helmet
-          script={[
-            {
-              src: 'foo.js',
-              async: undefined,
-            },
-          ]}
-        />,
-        context
-      );
-
-      const { script } = context.helmet;
-
-      expect(script.toString()).toMatchSnapshot();
     });
   });
 
   describe('Declarative API', () => {
     it('provides initial values if no state is found', () => {
-      const context = {};
+      const context: IHelmetDataContext = {};
       render(<div />, context);
-      const head = context.helmet;
 
-      expect(head.meta).toBeDefined();
-      expect(head.meta.toString).toBeDefined();
+      expect(context.state).toBeDefined();
+      const {meta} = context.state!;
 
-      expect(head.meta.toString()).toBe('');
+      expect(meta).toBeDefined();
+      expect(meta.toString).toBeDefined();
+
+      expect(meta.toString()).toBe('');
     });
 
     it('rewind() provides a fallback object for empty Helmet state', () => {
-      const context = {};
+      const context: IHelmetDataContext = {};
       render(<div />, context);
 
-      const head = context.helmet;
+      expect(context.state).toBeDefined();
+      const head = context.state!;
 
-      expect(head.htmlAttributes).toBeDefined();
-      expect(head.htmlAttributes.toString).toBeDefined();
-      expect(head.htmlAttributes.toString()).toBe('');
-      expect(head.htmlAttributes.toComponent).toBeDefined();
-      expect(head.htmlAttributes.toComponent()).toEqual({});
+      expect(head.html).toBeDefined();
+      expect(head.html.toString).toBeDefined();
+      expect(head.html.toString()).toBe('');
+      expect(head.html.toComponent).toBeDefined();
+      expect(head.html.toComponent()).toEqual({});
 
       expect(head.title).toBeDefined();
       expect(head.title.toString).toBeDefined();
       expect(head.title.toString()).toMatchSnapshot();
       expect(head.title.toComponent).toBeDefined();
 
-      const markup = ReactServer.renderToStaticMarkup(head.title.toComponent());
+      const markup = renderToStaticMarkup(head.title.toComponent());
 
       expect(markup).toMatchSnapshot();
 
@@ -167,8 +130,7 @@ describe('server', () => {
 
       const baseComponent = head.base.toComponent();
 
-      expect(baseComponent).toEqual(isArray);
-      expect(baseComponent).toHaveLength(0);
+      expect(baseComponent).toEqual(<></>);
 
       expect(head.meta).toBeDefined();
       expect(head.meta.toString).toBeDefined();
@@ -177,7 +139,6 @@ describe('server', () => {
 
       const metaComponent = head.meta.toComponent();
 
-      expect(metaComponent).toEqual(isArray);
       expect(metaComponent).toHaveLength(0);
 
       expect(head.link).toBeDefined();
@@ -187,7 +148,6 @@ describe('server', () => {
 
       const linkComponent = head.link.toComponent();
 
-      expect(linkComponent).toEqual(isArray);
       expect(linkComponent).toHaveLength(0);
 
       expect(head.script).toBeDefined();
@@ -197,7 +157,6 @@ describe('server', () => {
 
       const scriptComponent = head.script.toComponent();
 
-      expect(scriptComponent).toEqual(isArray);
       expect(scriptComponent).toHaveLength(0);
 
       expect(head.noscript).toBeDefined();
@@ -207,7 +166,6 @@ describe('server', () => {
 
       const noscriptComponent = head.noscript.toComponent();
 
-      expect(noscriptComponent).toEqual(isArray);
       expect(noscriptComponent).toHaveLength(0);
 
       expect(head.style).toBeDefined();
@@ -217,7 +175,6 @@ describe('server', () => {
 
       const styleComponent = head.style.toComponent();
 
-      expect(styleComponent).toEqual(isArray);
       expect(styleComponent).toHaveLength(0);
 
       expect(head.priority).toBeDefined();
@@ -227,67 +184,74 @@ describe('server', () => {
     });
 
     it('does not render undefined attribute values', () => {
-      const context = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
-          <script src="foo.js" async={undefined} />
+          <Script src="foo.js" crossOrigin={undefined} />
         </Helmet>,
         context
       );
 
-      const { script } = context.helmet;
+      expect(context.state).toBeDefined();
+      const { script } = context.state!;
 
       expect(script.toString()).toMatchSnapshot();
     });
 
     it('prioritizes SEO tags when asked to', () => {
-      const context = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet prioritizeSeoTags>
-          <link rel="notImportant" href="https://www.chipotle.com" />
-          <link rel="canonical" href="https://www.tacobell.com" />
-          <meta property="og:title" content="A very important title" />
+          <Link rel="notImportant" href="https://www.chipotle.com" />
+          <Link rel="canonical" href="https://www.tacobell.com" />
+          <Meta property="og:title" content="A very important title" />
         </Helmet>,
         context
       );
 
-      expect(context.helmet.priority.toString()).toContain(
+      expect(context.state).toBeDefined();
+      const state = context.state!;
+      
+      expect(state.priority.toString()).toContain(
         'rel="canonical" href="https://www.tacobell.com"'
       );
-      expect(context.helmet.link.toString()).not.toContain(
+      expect(state.link.toString()).not.toContain(
         'rel="canonical" href="https://www.tacobell.com"'
       );
 
-      expect(context.helmet.priority.toString()).toContain(
+      expect(state.priority.toString()).toContain(
         'property="og:title" content="A very important title"'
       );
-      expect(context.helmet.meta.toString()).not.toContain(
+      expect(state.meta.toString()).not.toContain(
         'property="og:title" content="A very important title"'
       );
     });
 
     it('does not prioritize SEO unless asked to', () => {
-      const context = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
-          <link rel="notImportant" href="https://www.chipotle.com" />
-          <link rel="canonical" href="https://www.tacobell.com" />
-          <meta property="og:title" content="A very important title" />
+          <Link rel="notImportant" href="https://www.chipotle.com" />
+          <Link rel="canonical" href="https://www.tacobell.com" />
+          <Meta property="og:title" content="A very important title" />
         </Helmet>,
         context
       );
 
-      expect(context.helmet.priority.toString()).not.toContain(
+      expect(context.state).toBeDefined();
+      const state = context.state!;
+
+      expect(state.priority.toString()).not.toContain(
         'rel="canonical" href="https://www.tacobell.com"'
       );
-      expect(context.helmet.link.toString()).toContain(
+      expect(state.link.toString()).toContain(
         'rel="canonical" href="https://www.tacobell.com"'
       );
 
-      expect(context.helmet.priority.toString()).not.toContain(
+      expect(state.priority.toString()).not.toContain(
         'property="og:title" content="A very important title"'
       );
-      expect(context.helmet.meta.toString()).toContain(
+      expect(state.meta.toString()).toContain(
         'property="og:title" content="A very important title"'
       );
     });

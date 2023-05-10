@@ -35,7 +35,6 @@ export interface IHelmetTags {
 
 export interface IHelmetInstanceState extends IHelmetTags {
   id: number
-  emptyState: boolean
 }
 
 export interface IHelmetState {
@@ -65,6 +64,8 @@ export interface IHelmetServerState {
   script: IHelmetDatum<ReactElement[]>,
   link: IHelmetDatum<ReactElement[]>,
   noscript: IHelmetDatum<ReactElement[]>,
+
+  priority: IHelmetDatum<ReactElement[]>
 }
 
 export interface IHelmetDataContext {
@@ -84,7 +85,7 @@ export const HELMET_ATTRIBUTE = 'data-rh';
 
 
 export type UpdateInstanceCallback = <
-  T extends keyof Omit<IHelmetInstanceState, "id" | "emptyState">,
+  T extends keyof Omit<IHelmetInstanceState, "id" >,
   K extends NonNullable<IHelmetInstanceState[T]>
 >(instance: IHelmetInstanceState, propName: T, value: ArrayElement<K>) => void;
 

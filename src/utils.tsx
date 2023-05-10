@@ -1,13 +1,14 @@
-import {createElement, Dispatch, ReactElement, ReactNode, SetStateAction} from "react";
+import {createElement, ReactElement} from "react";
 import {
-  ArrayElement, IHelmetDatum,
+  ArrayElement,
   IHelmetInstanceState, IHelmetServerState,
   IHelmetState,
   IHelmetTags,
   LinkProps,
   MetaProps,
   primaryLinkAttributes,
-  primaryMetaAttributes, TagProps,
+  primaryMetaAttributes,
+  TagProps,
 } from "./types";
 import {renderToStaticMarkup} from "react-dom/server";
 
@@ -36,21 +37,6 @@ export const removeItem = <T, K extends T[] | undefined>(
     ? (items?.filter(m => keySelector(m) !== keySelector(item)) as K)
     : (items?.filter(m => m !== item) as K);
 }
-
-export const removeAction =
-  <T, K extends T[] | undefined>(
-    action: Dispatch<SetStateAction<K>>,
-    keySelector?: (item: T) => any
-  ) =>
-    (item: T) => {
-      action(items => removeItem(items, item, keySelector));
-    };
-export const addAction = <T, K extends T[] | undefined>(
-  action: Dispatch<SetStateAction<K>>,
-  keySelector?: (item: T) => any
-) => {
-  return (item: T) => action(items => addUniqueItem<T, K>(items, item, keySelector));
-};
 
 export namespace _ {
   export type TSelector<T> = ((elem: T) => any) | keyof T;
@@ -86,12 +72,6 @@ export namespace _ {
     return obj.every(m => m === undefined || m.length === 0);
   };
 
-  type InferKey<T> = T extends Partial<Record<infer K, any>> ? K : never;
-  type InferValue<T> = T extends Partial<Record<any, infer V>> ? V : never;
-
-  export const toPairs = <T extends Partial<Record<string, any>>>(obj: T) => {
-    return Object.entries(obj) as [InferKey<T>, InferValue<T>][];
-  };
 
   type TValSelReturn<
     TItem,
@@ -147,13 +127,13 @@ const findLinkPrimaryAttribute = (link: LinkProps) => {
 };
 
 const mergeAllToOne = <T extends keyof IHelmetTags, TElement extends ArrayElement<IHelmetTags[T]>>(
-  key: T,
+  values: TElement[] | undefined,
+  isEmptyState: boolean,
   result: TElement | undefined,
-  instance: IHelmetInstanceState,
   usePrevResult?: boolean,
   emptyStateFallback?: (result: TElement | undefined) => TElement | undefined
 ): TElement | undefined => {
-  if (instance.emptyState) {
+  if (isEmptyState) {
     if (emptyStateFallback !== undefined) {
       return emptyStateFallback(result);
     }
@@ -161,23 +141,21 @@ const mergeAllToOne = <T extends keyof IHelmetTags, TElement extends ArrayElemen
     return undefined;
   }
 
-  const values = instance[key] as TElement[] | undefined;
   return (values || []).reduce((prev, current) => {
     return usePrevResult ? {...prev, ...current} : {...current};
   }, result);
 };
 
 const mergeAllToAll = <T extends keyof IHelmetTags, TElement extends ArrayElement<IHelmetTags[T]>>(
-  key: T,
-  result: TElement[],
-  instance: IHelmetInstanceState
+  values: TElement[] | undefined,
+  isEmptyState: boolean,
+  result: TElement[]
 ): TElement[] => {
-  if (instance.emptyState) {
+  if (isEmptyState) {
     _.clear(result);
   }
 
-  if (instance[key]) {
-    const values = instance[key] as TElement[];
+  if (values) {
     result.push(...values);
   }
 
@@ -185,21 +163,20 @@ const mergeAllToAll = <T extends keyof IHelmetTags, TElement extends ArrayElemen
 };
 
 const mergeAllByPrimaryAttribute = <T extends keyof IHelmetTags, TElement = IHelmetTags[T]>(
-  tagProp: T,
+  values: TElement[] | undefined,
+  isEmptyState: boolean,
   result: TElement[],
-  instance: IHelmetInstanceState,
   primaryAttributeSelector: (tag: TElement) => string | undefined
 ) => {
-  if (instance.emptyState) {
+  if (isEmptyState) {
     _.clear(result);
   } else {
-    const instanceInputTags = instance[tagProp] as TElement[] | undefined;
-    if (instanceInputTags) {
+    if (values) {
       if (result.length === 0) {
-        result.push(...instanceInputTags);
+        result.push(...values);
       } else {
         const instanceGrouped = _.groupBy(
-          instanceInputTags,
+          values,
           primaryAttributeSelector,
           (item, index) => [item, index] as [TElement, number]
         );
@@ -251,26 +228,26 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
   };
 
   for (const instance of instances) {
-    instance.emptyState = _.isEmptyArray(instance.titleTags, instance.linkTags, instance.baseTags, instance.bodyTags,
+    const isEmptyState = _.isEmptyArray(instance.titleTags, instance.linkTags, instance.baseTags, instance.bodyTags,
       instance.htmlTags, instance.styleTags, instance.scriptTags, instance.noscriptTags, instance.metaTags, instance.linkTags);
 
-    state.titleTag = mergeAllToOne("titleTags", state.titleTag, instance, true, titleEmptyStateFallback);
-    state.baseTag = mergeAllToOne("baseTags", state.baseTag, instance);
-    state.bodyTag = mergeAllToOne("bodyTags", state.bodyTag, instance);
-    state.htmlTag = mergeAllToOne("htmlTags", state.htmlTag, instance);
-    state.styleTags = mergeAllToAll("styleTags", state.styleTags, instance);
-    state.scriptTags = mergeAllToAll("scriptTags", state.scriptTags, instance);
-    state.noscriptTags = mergeAllToAll("noscriptTags", state.noscriptTags, instance);
+    state.titleTag = mergeAllToOne(instance.titleTags, isEmptyState, state.titleTag, true, titleEmptyStateFallback);
+    state.baseTag = mergeAllToOne(instance.baseTags, isEmptyState, state.baseTag);
+    state.bodyTag = mergeAllToOne(instance.bodyTags, isEmptyState, state.bodyTag);
+    state.htmlTag = mergeAllToOne(instance.htmlTags, isEmptyState, state.htmlTag);
+    state.styleTags = mergeAllToAll(instance.styleTags, isEmptyState, state.styleTags);
+    state.scriptTags = mergeAllToAll(instance.scriptTags, isEmptyState, state.scriptTags);
+    state.noscriptTags = mergeAllToAll(instance.noscriptTags, isEmptyState, state.noscriptTags);
     state.metaTags = mergeAllByPrimaryAttribute(
-      "metaTags",
+      instance.metaTags,
+      isEmptyState,
       state.metaTags,
-      instance,
       findMetaPrimaryAttribute
     );
     state.linkTags = mergeAllByPrimaryAttribute(
-      "linkTags",
+      instance.linkTags,
+      isEmptyState,
       state.linkTags,
-      instance,
       findLinkPrimaryAttribute
     );
   }
@@ -278,55 +255,66 @@ export const buildState = (instances: IHelmetInstanceState[]): IHelmetState => {
   return state;
 };
 
-export const buildServerState = (state: IHelmetState): IHelmetServerState => {
+const createReactComponent = <T extends TagProps, >(tag: T | undefined, tagName: keyof HTMLElementTagNameMap, fallbackTag?: T) => tag
+  ? createComponent(tagName, tag)
+  : (fallbackTag ? createComponent(tagName, fallbackTag) : <></>);
+const createReactComponents = <T extends TagProps, >(tags: T[], tagName: keyof HTMLElementTagNameMap) => tags.map((m, i) => createComponent(tagName, {
+  ...m,
+  key: i
+}));
 
-  const titleComponent = state.titleTag ? createComponent("title", state.titleTag) : <></>;
-  const baseComponent = state.baseTag ? createComponent("base", state.baseTag) : <></>;
-  const bodyComponent = state.bodyTag ? createComponent("body", state.bodyTag) : <></>;
-  const htmlComponent = state.htmlTag ? createComponent("html", state.htmlTag) : <></>;
-  const metaComponents = state.metaTags.map((m, i) => createComponent("meta", {...m, key: i}));
-  const styleComponents = state.styleTags.map((m, i) => createComponent("style", {...m, key: i}));
-  const scriptComponents = state.scriptTags.map((m, i) => createComponent("script", {...m, key: i}));
-  const linkComponents = state.linkTags.map((m, i) => createComponent("link", {...m, key: i}));
-  const noscriptComponents = state.noscriptTags.map((m, i) => createComponent("noscript", {...m, key: i}));
+export const buildServerState = (state: IHelmetState): IHelmetServerState => {
+  const titleComponentCallback = () => createReactComponent(state.titleTag, "title", {});
+  const baseComponentCallback = () => createReactComponent(state.baseTag, "base");
+  const bodyComponentCallback = () => createReactComponent(state.bodyTag, "body");
+  const htmlComponentCallback = () => createReactComponent(state.htmlTag, "html");
+  const metaComponentsCallback = () => createReactComponents(state.metaTags, "meta");
+  const styleComponentsCallback = () => createReactComponents(state.styleTags, "style");
+  const scriptComponentsCallback = () => createReactComponents(state.scriptTags, "script");
+  const linkComponentsCallback = () => createReactComponents(state.linkTags, "link");
+  const noscriptComponentsCallback = () => createReactComponents(state.noscriptTags, "noscript");
 
   return {
     title: {
-      toComponent: () => titleComponent,
-      toString: () => renderToStaticMarkup(titleComponent)
+      toComponent: titleComponentCallback,
+      toString: () => renderToStaticMarkup(titleComponentCallback())
     },
     base: {
-      toComponent: () => baseComponent,
-      toString: () => renderToStaticMarkup(baseComponent)
+      toComponent: baseComponentCallback,
+      toString: () => renderToStaticMarkup(baseComponentCallback())
     },
     body: {
-      toComponent: () => bodyComponent.props ?? {},
-      toString: () => renderToStaticMarkup(bodyComponent).replace("<body ", "").replace("></body>", "")
+      toComponent: () => bodyComponentCallback().props ?? {},
+      toString: () => renderToStaticMarkup(bodyComponentCallback()).replace("<body ", "").replace("></body>", "")
     },
     html: {
-      toComponent: () => htmlComponent.props ?? {},
-      toString: () => renderToStaticMarkup(htmlComponent).replace("<html ", "").replace("></html>", "")
+      toComponent: () => htmlComponentCallback().props ?? {},
+      toString: () => renderToStaticMarkup(htmlComponentCallback()).replace("<html ", "").replace("></html>", "")
     },
     meta: {
-      toComponent: () => metaComponents,
-      toString: () => renderToStaticMarkup(<>{metaComponents}</>)
+      toComponent: metaComponentsCallback,
+      toString: () => renderToStaticMarkup(<>{metaComponentsCallback()}</>)
     },
     style: {
-      toComponent: () => styleComponents,
-      toString: () => renderToStaticMarkup(<>{styleComponents}</>)
+      toComponent: styleComponentsCallback,
+      toString: () => renderToStaticMarkup(<>{styleComponentsCallback()}</>)
     },
     script: {
-      toComponent: () => scriptComponents,
-      toString: () => renderToStaticMarkup(<>{scriptComponents}</>)
+      toComponent: scriptComponentsCallback,
+      toString: () => renderToStaticMarkup(<>{scriptComponentsCallback()}</>)
     },
     link: {
-      toComponent: () => linkComponents,
-      toString: () => renderToStaticMarkup(<>{linkComponents}</>)
+      toComponent: linkComponentsCallback,
+      toString: () => renderToStaticMarkup(<>{linkComponentsCallback()}</>)
     },
     noscript: {
-      toComponent: () => noscriptComponents,
-      toString: () => renderToStaticMarkup(<>{noscriptComponents}</>)
+      toComponent: () => noscriptComponentsCallback(),
+      toString: () => renderToStaticMarkup(<>{noscriptComponentsCallback()}</>)
     },
+    priority: {
+      toComponent: () => [<></>],
+      toString: () => renderToStaticMarkup(<></>)
+    }
   }
 }
 
@@ -360,9 +348,5 @@ export const getHtmlAttributesFromHtmlElement = <T extends Element>(htmlElement:
   }, [] as { name: string, value: string }[])
 }
 
-export const getHtmlAttributesFromReactElement = <T extends ReactElement>(node: T, selector: keyof HTMLElementTagNameMap) => {
-  const htmlElement = renderToHtmlElement(node, selector);
-  return getHtmlAttributesFromHtmlElement(htmlElement)
-}
 
 
