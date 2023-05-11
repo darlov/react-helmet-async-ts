@@ -103,6 +103,19 @@ describe("body attributes", () => {
     expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
   });
 
+  it("handles style object attributes", () => {
+    render(
+      <Helmet>
+        <Body style={{background: 'black'}} />
+      </Helmet>
+    );
+
+    const bodyTag = document.body;
+
+    expect(bodyTag.getAttribute("style")).toBe("background:black");
+    expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
+  });
+
   it("clears body attributes that are handled within helmet", () => {
     render(
         <Helmet>

@@ -5,6 +5,7 @@ import {
   renderToHtmlElement,
    createComponent,
 } from "../utils";
+import {createRoot} from "react-dom/client";
 
 interface IDocumentElementRenderProps {
   tag: TagProps | undefined;
@@ -47,6 +48,8 @@ export const HtmlAttributesRender: FC<IDocumentElementRenderProps> = ({
   tagName,
   attachTo,
 }) => {
+  
+  createRoot
   useEffect(() => {
     if (tag !== undefined) {
       const htmlElement = renderToHtmlElement(

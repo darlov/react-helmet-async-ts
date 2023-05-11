@@ -149,5 +149,15 @@ describe("title", () => {
       );
       expect(document.title).toBe("");
     });
+
+    it("does not encode all characters with HTML character", () => {
+      render(
+        <Helmet>
+          <Title dangerouslySetInnerHTML={{__html: "“New Post”"}} />
+        </Helmet>
+      );
+
+      expect(document.title).toMatchSnapshot();
+    });
   });
 });
