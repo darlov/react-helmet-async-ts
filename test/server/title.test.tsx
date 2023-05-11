@@ -1,8 +1,7 @@
-import {Helmet, Title} from '../../src';
+import {Helmet, IHelmetDataContext, Title} from '../../src';
 
 import { render } from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
-import {IHelmetDataContext} from "../../src/types";
 
 
 describe('server', () => {
@@ -34,7 +33,6 @@ describe('server', () => {
     //     </Helmet>,
     //     context
     //   );
-      /* eslint-enable react/no-unescaped-entities */
 
     //   expect(context.state).toBeDefined();
     //   const {title} = context.state!;

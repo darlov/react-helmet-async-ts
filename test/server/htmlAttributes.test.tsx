@@ -1,11 +1,11 @@
-import {Helmet, Html, IHelmetData} from '../../src';
+import {Helmet, Html, IHelmetDataContext} from '../../src';
 import {render} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
   describe('Declarative API', () => {
     it('renders html attributes as component', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
           <Html lang="ga" className="myClassName"/>
@@ -14,8 +14,8 @@ describe('server', () => {
       );
 
       expect(context.state).toBeDefined();
-      const {html} = context.state!;
-      const attrs = html.toComponent();
+      const {htmlAttributes} = context.state!;
+      const attrs = htmlAttributes.toComponent();
 
       expect(attrs).toBeDefined();
 
@@ -25,7 +25,7 @@ describe('server', () => {
     });
 
     it('renders html attributes as string', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
           <Html lang="ga" className="myClassName"/>
@@ -34,11 +34,11 @@ describe('server', () => {
       );
 
       expect(context.state).toBeDefined();
-      const {html} = context.state!;
+      const {htmlAttributes} = context.state!;
 
-      expect(html).toBeDefined();
-      expect(html.toString).toBeDefined();
-      expect(html.toString()).toMatchSnapshot();
+      expect(htmlAttributes).toBeDefined();
+      expect(htmlAttributes.toString).toBeDefined();
+      expect(htmlAttributes.toString()).toMatchSnapshot();
     });
   });
 });

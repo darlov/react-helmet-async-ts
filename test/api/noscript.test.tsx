@@ -1,10 +1,10 @@
 import { HELMET_ATTRIBUTE, Helmet, Noscript } from "../../src";
-import { customRender } from "./utils";
+import { render } from "./utils";
 
 describe("noscript tags", () => {
   describe("Declarative API", () => {
     it("updates noscript tags", () => {
-      customRender(
+      render(
         <Helmet>
           <Noscript id="bar">{'<link rel="stylesheet" type="text/css" href="foo.css" />'}</Noscript>
         </Helmet>
@@ -19,7 +19,7 @@ describe("noscript tags", () => {
     });
 
     it("clears all noscripts tags if none are specified", () => {
-      customRender(
+      render(
         <Helmet>
           <Noscript id="bar">{'<link rel="stylesheet" type="text/css" href="foo.css" />'}</Noscript>
         </Helmet>,
@@ -33,7 +33,7 @@ describe("noscript tags", () => {
     });
 
     it("tags without 'innerHTML' are not accepted", () => {
-      customRender(
+      render(
         <Helmet>
           <Noscript property="won't work" />
         </Helmet>
@@ -46,7 +46,7 @@ describe("noscript tags", () => {
     });
 
     it("does not render tag when primary attribute is null", () => {
-      customRender(
+      render(
         <Helmet>
           <Noscript>{undefined}</Noscript>
         </Helmet>

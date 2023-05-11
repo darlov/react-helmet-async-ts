@@ -1,6 +1,5 @@
-import {Helmet, Script} from '../../src';
+import {Helmet, IHelmetDataContext, Script} from '../../src';
 import {render} from './utils';
-import {IHelmetDataContext} from "../../src/types";
 import {renderToStaticMarkup} from "react-dom/server";
 
 

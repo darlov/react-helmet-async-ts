@@ -1,4 +1,4 @@
-import {Helmet, HelmetContextProvider, Meta, Title} from '../src';
+import {Helmet, HelmetContextProvider, Meta, Title} from '../../src';
 import { render as testRender } from "@testing-library/react";
 import {ReactNode} from "react";
 

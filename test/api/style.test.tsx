@@ -1,4 +1,4 @@
-import { customRender } from "./utils";
+import { render } from "./utils";
 import { Helmet, Style, HELMET_ATTRIBUTE } from "../../src";
 
 describe("style tags", () => {
@@ -15,7 +15,7 @@ describe("style tags", () => {
             }
         `;
 
-      customRender(
+      render(
         <Helmet>
           <Style type="text/css">{cssText1}</Style>
           <Style>{cssText2}</Style>
@@ -33,8 +33,7 @@ describe("style tags", () => {
       expect(existingTags).toHaveLength(2);
 
       expect(firstTag).toBeInstanceOf(Element);
-      expect(firstTag.getAttribute).toBeDefined();
-      expect(firstTag.getAttribute("type")).toBe("text/css");
+      expect(firstTag.type).toBe("text/css");
       expect(firstTag.innerHTML).toEqual(cssText1);
       expect(firstTag.outerHTML).toMatchSnapshot();
 
@@ -49,7 +48,7 @@ describe("style tags", () => {
                 background-color: green;
             }
         `;
-      customRender(
+      render(
         <Helmet>
           <Style type="text/css">{cssText}</Style>
         </Helmet>,
@@ -65,7 +64,7 @@ describe("style tags", () => {
     });
 
     it("tags without 'cssText' are not accepted", () => {
-      customRender(
+      render(
         <Helmet>
           <Style property="won't work" />
         </Helmet>
@@ -80,7 +79,7 @@ describe("style tags", () => {
     });
 
     it("does not render tag when primary attribute is null", () => {
-      customRender(
+      render(
         <Helmet>
           <Style>{undefined}</Style>
         </Helmet>

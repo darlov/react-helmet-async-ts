@@ -1,15 +1,15 @@
-import {Helmet, IHelmetData, Link} from '../../src';
-import { render } from './utils';
+import {Helmet, IHelmetDataContext, Link} from '../../src';
+import {render} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
   describe('Declarative API', () => {
     it('renders link tags as React components', () => {
-      const context:IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
-          <Link href="http://localhost/helmet" rel="canonical" />
-          <Link href="http://localhost/style.css" rel="stylesheet" type="text/css" />
+          <Link href="http://localhost/helmet" rel="canonical"/>
+          <Link href="http://localhost/style.css" rel="stylesheet" type="text/css"/>
         </Helmet>,
         context
       );
@@ -25,7 +25,7 @@ describe('server', () => {
       expect(linkComponent).toHaveLength(2);
 
       linkComponent.forEach(link => {
-        expect(link).toEqual(expect.objectContaining({ type: 'link' }));
+        expect(link).toEqual(expect.objectContaining({type: 'link'}));
       });
 
       const markup = renderToStaticMarkup(<>{linkComponent}</>);
@@ -34,11 +34,11 @@ describe('server', () => {
     });
 
     it('renders link tags as string', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
-          <Link href="http://localhost/helmet" rel="canonical" />
-          <Link href="http://localhost/style.css" rel="stylesheet" type="text/css" />
+          <Link href="http://localhost/helmet" rel="canonical"/>
+          <Link href="http://localhost/style.css" rel="stylesheet" type="text/css"/>
         </Helmet>,
         context
       );

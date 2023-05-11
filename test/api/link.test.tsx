@@ -1,36 +1,33 @@
 import { Helmet, Link } from "../../src";
 import { HELMET_ATTRIBUTE } from "../../src";
-import { customRender } from "./utils";
+import { render } from "./utils";
 
 describe("link tags", () => {
   describe("Declarative API", () => {
     it("updates link tags", () => {
-      customRender(
+      render(
         <Helmet>
           <Link href="http://localhost/helmet" rel="canonical" />
           <Link href="http://localhost/style.css" rel="stylesheet" type="text/css" />
         </Helmet>
       );
 
-      const tagNodes = document.head.querySelectorAll(`link[${HELMET_ATTRIBUTE}]`);
+      const tagNodes = document.head.querySelectorAll<HTMLLinkElement>(`link[${HELMET_ATTRIBUTE}]`);
       const existingTags = [...tagNodes];
 
       expect(existingTags).toBeDefined();
 
       const filteredTags = existingTags.filter(
         tag =>
-          (tag.getAttribute("href") === "http://localhost/style.css" &&
-            tag.getAttribute("rel") === "stylesheet" &&
-            tag.getAttribute("type") === "text/css") ||
-          (tag.getAttribute("href") === "http://localhost/helmet" &&
-            tag.getAttribute("rel") === "canonical")
+          (tag.href === "http://localhost/style.css" && tag.rel === "stylesheet" && tag.type === "text/css") 
+          || (tag.href === "http://localhost/helmet" && tag.rel === "canonical")
       );
 
-      expect(filteredTags.length).toBeGreaterThanOrEqual(2);
+      expect(filteredTags).toHaveLength(2);
     });
 
     it("clears all link tags if none are specified", () => {
-      customRender(
+      render(
         <Helmet>
           <Link href="http://localhost/helmet" rel="canonical" />
         </Helmet>,
@@ -45,21 +42,21 @@ describe("link tags", () => {
     });
 
     it("tags without 'href' or 'rel' are not accepted, even if they are valid for other tags", () => {
-      customRender(
+      render(
         <Helmet>
           <Link lang="won't work" />
         </Helmet>
       );
 
       const tagNodes = document.head.querySelectorAll(`link[${HELMET_ATTRIBUTE}]`);
-      const existingTags = [].slice.call(tagNodes);
+      const existingTags = [...tagNodes];
 
       expect(existingTags).toBeDefined();
       expect(existingTags).toHaveLength(0);
     });
 
     it("tags 'rel' and 'href' properly use 'rel' as the primary identification for this tag, regardless of ordering", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Link href="http://localhost/helmet" rel="canonical" />
@@ -88,7 +85,7 @@ describe("link tags", () => {
     });
 
     it("tags with rel='stylesheet' uses the href as the primary identification of the tag, regardless of ordering", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Link href="http://localhost/style.css" rel="stylesheet" type="text/css" media="all" />
@@ -125,7 +122,7 @@ describe("link tags", () => {
     });
 
     it("sets link tags based on deepest nested component", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Link rel="canonical" href="http://localhost/helmet" />
@@ -179,7 +176,7 @@ describe("link tags", () => {
     });
 
     it("allows duplicate link tags if specified in the same component", () => {
-      customRender(
+      render(
         <Helmet>
           <Link rel="canonical" href="http://localhost/helmet" />
           <Link rel="canonical" href="http://localhost/helmet/component" />
@@ -208,7 +205,7 @@ describe("link tags", () => {
     });
 
     it("overrides duplicate link tags with a single link tag in a nested component", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Link rel="canonical" href="http://localhost/helmet" />
@@ -235,7 +232,7 @@ describe("link tags", () => {
     });
 
     it("overrides single link tag with duplicate link tags in a nested component", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Link rel="canonical" href="http://localhost/helmet" />
@@ -269,7 +266,7 @@ describe("link tags", () => {
     });
 
     it("does not render tag when primary attribute is null", () => {
-      customRender(
+      render(
         <Helmet>
           <Link rel="icon" sizes="192x192" href={undefined} />
           <Link rel="canonical" href="http://localhost/helmet/component" />
@@ -278,10 +275,11 @@ describe("link tags", () => {
 
       const tagNodes = document.head.querySelectorAll(`link[${HELMET_ATTRIBUTE}]`);
       const existingTags = [...tagNodes];
-      const firstTag = existingTags[0];
 
       expect(existingTags).toBeDefined();
       expect(existingTags).toHaveLength(1);
+      
+      const firstTag = existingTags[0];
 
       expect(firstTag).toBeInstanceOf(Element);
       expect(firstTag.getAttribute).toBeDefined();

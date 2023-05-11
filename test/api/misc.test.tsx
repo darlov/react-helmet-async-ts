@@ -1,5 +1,5 @@
 import { render as testRender } from "@testing-library/react";
-import {HelmetContextProvider, Helmet, HELMET_ATTRIBUTE, Meta, Title, Script} from "../src";
+import {HelmetContextProvider, Helmet, HELMET_ATTRIBUTE, Meta, Title, Script} from "../../src";
 import {ReactNode} from "react";
 import {vi} from "vitest";
 const render = (node: ReactNode) => {

@@ -283,11 +283,11 @@ export const buildServerState = (state: IHelmetState): IHelmetServerState => {
       toComponent: baseComponentCallback,
       toString: () => renderToStaticMarkup(baseComponentCallback())
     },
-    body: {
+    bodyAttributes: {
       toComponent: () => bodyComponentCallback().props ?? {},
       toString: () => renderToStaticMarkup(bodyComponentCallback()).replace("<body ", "").replace("></body>", "")
     },
-    html: {
+    htmlAttributes: {
       toComponent: () => htmlComponentCallback().props ?? {},
       toString: () => renderToStaticMarkup(htmlComponentCallback()).replace("<html ", "").replace("></html>", "")
     },

@@ -1,13 +1,13 @@
 import { FC, ReactNode, useState } from "react";
 import { HelmetContextProvider } from "../../src";
-import { render, RenderResult } from "@testing-library/react";
+import { render as testRender, RenderResult } from "@testing-library/react";
 import { fireEvent } from "@testing-library/dom";
 import { act } from "react-dom/test-utils";
 
-export const customRender = (node: ReactNode, delayedComponent?: ReactNode) => {
+export const render = (node: ReactNode, delayedComponent?: ReactNode) => {
   let result: RenderResult;
 
-  result = render(
+  result = testRender(
     <DelayedRenderComponent delayedComponent={delayedComponent}>{node}</DelayedRenderComponent>
   );
 

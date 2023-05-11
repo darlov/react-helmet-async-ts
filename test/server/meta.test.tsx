@@ -1,11 +1,11 @@
-import {Helmet, IHelmetData, Meta} from '../../src';
+import {Helmet, IHelmetDataContext, Meta} from '../../src';
 import { render } from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
   describe('Declarative API', () => {
     it('renders meta tags as React components', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
           <Meta charSet="utf-8" />
@@ -40,7 +40,7 @@ describe('server', () => {
     });
 
     it('renders meta tags as string', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
           <Meta charSet="utf-8" />

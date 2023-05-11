@@ -57,8 +57,8 @@ export interface IHelmetDatum<T> {
 export interface IHelmetServerState {
   title: IHelmetDatum<ReactElement>,
   base: IHelmetDatum<ReactElement>,
-  body: IHelmetDatum<Required<IHelmetState>["bodyTag"]>,
-  html: IHelmetDatum<Required<IHelmetState>["htmlTag"]>
+  bodyAttributes: IHelmetDatum<Required<IHelmetState>["bodyTag"]>,
+  htmlAttributes: IHelmetDatum<Required<IHelmetState>["htmlTag"]>
   meta: IHelmetDatum<ReactElement[]>
   style: IHelmetDatum<ReactElement[]>,
   script: IHelmetDatum<ReactElement[]>,

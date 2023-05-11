@@ -3,14 +3,17 @@ import react from "@vitejs/plugin-react";
 import typescript from '@rollup/plugin-typescript';
 
 
+// noinspection JSUnusedGlobalSymbols
 export default defineConfig((opt) => {  
   return {
     plugins: [react() as any, typescript({tsconfig: opt.mode === "test"? "./test/tsconfig.json" : "./tsconfig.json" })],
     test: {
+      environmentMatchGlobs: [
+        ['test/api/**\/*.{test,spec}.{ts,tsx}', 'jsdom'],
+        ['test/server/**\/*.{test,spec}.{ts,tsx}', 'node']
+      ],
       globals: true,
-      environment: 'jsdom',
       setupFiles: "./vitest.setup.ts",
-      include: ['**\/*.{test,spec}.{ts,tsx}'],
       logHeapUsage: true,
       snapshotFormat: {
         printBasicPrototype: true,

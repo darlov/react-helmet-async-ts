@@ -1,4 +1,4 @@
-import { customRender } from "./utils";
+import { render } from "./utils";
 import { Helmet, Meta, Title } from "../../src";
 import { FC } from "react";
 
@@ -14,7 +14,7 @@ const TextComponent: FC<{ valueLeft: string; valueRight: string }> = ({
 describe("title", () => {
   describe("API", () => {
     it("updates page title", () => {
-      customRender(
+      render(
         <Helmet defaultTitle="Fallback">
           <Title>Test Title</Title>
         </Helmet>
@@ -26,7 +26,7 @@ describe("title", () => {
     it("updates page title and allows children containing expressions", () => {
       const someValue = "Some Great Title";
 
-      customRender(
+      render(
         <Helmet>
           <Title>Title: {someValue}</Title>
         </Helmet>
@@ -36,7 +36,7 @@ describe("title", () => {
     });
 
     it("updates page title with multiple children", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Title>Test Title</Title>
@@ -54,7 +54,7 @@ describe("title", () => {
     });
 
     it("sets title based on deepest nested component", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Title>Main Title</Title>
@@ -69,7 +69,7 @@ describe("title", () => {
     });
 
     it("sets title using deepest nested component with a defined title", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Title>Main Title</Title>
@@ -84,7 +84,7 @@ describe("title", () => {
     it("does not encode all characters with HTML character entity equivalents", () => {
       const chineseTitle = "膣膗 鍆錌雔";
 
-      customRender(
+      render(
         <Helmet>
           <Title>{chineseTitle}</Title>
         </Helmet>
@@ -94,13 +94,13 @@ describe("title", () => {
     });
 
     it("uses defaultTitle if no title is defined", () => {
-      customRender(<Helmet defaultTitle="Fallback" />);
+      render(<Helmet defaultTitle="Fallback" />);
 
       expect(document.title).toMatchSnapshot();
     });
 
     it("uses defaultTitle component if no title is defined", () => {
-      customRender(
+      render(
         <Helmet
           defaultTitle={<TextComponent valueLeft={"LeftFallback"} valueRight={"RightFallback"} />}
         />
@@ -110,7 +110,7 @@ describe("title", () => {
     });
 
     it("page title with prop itemProp", () => {
-      customRender(
+      render(
         <Helmet defaultTitle={"Fallback"}>
           <Title itemProp="name">Test Title with itemProp</Title>
         </Helmet>
@@ -125,7 +125,7 @@ describe("title", () => {
     it("retains existing title tag when no title tag is defined", () => {
       document.head.innerHTML = `<title>Existing Title</title>`;
 
-      customRender(
+      render(
         <Helmet>
           <Meta name="keywords" content="stuff" />
         </Helmet>
@@ -135,7 +135,7 @@ describe("title", () => {
     });
 
     it("clears title tag if empty title is defined", () => {
-      customRender(
+      render(
         <>
           <Helmet>
             <Title>Existing Title</Title>

@@ -1,5 +1,5 @@
 import { HELMET_ATTRIBUTE, Helmet, Body } from "../../src";
-import { customRender } from "./utils";
+import { render } from "./utils";
 import { BodyProps } from "../../src/types";
 
 type BodyExtendedProps = BodyProps & {"data-animal-type": string, "data-dropzone": string}
@@ -41,7 +41,7 @@ describe("body attributes", () => {
         [name]: value,
       };
 
-      customRender(
+      render(
         <Helmet>
           <Body {...attr} />
         </Helmet>
@@ -59,7 +59,7 @@ describe("body attributes", () => {
   });
 
   it("updates multiple body attributes", () => {
-    customRender(
+    render(
       <Helmet>
         <Body className="myClassName" tabIndex={-1} />
       </Helmet>
@@ -73,7 +73,7 @@ describe("body attributes", () => {
   });
 
   it("sets attributes based on the deepest nested component", () => {
-    customRender(
+    render(
       <div>
         <Helmet>
           <Body lang="en" />
@@ -91,7 +91,7 @@ describe("body attributes", () => {
   });
 
   it("handles valueless attributes", () => {
-    customRender(
+    render(
       <Helmet>
         <Body hidden />
       </Helmet>
@@ -104,7 +104,7 @@ describe("body attributes", () => {
   });
 
   it("clears body attributes that are handled within helmet", () => {
-    customRender(
+    render(
         <Helmet>
           <Body lang="en" hidden />
         </Helmet>,
@@ -119,7 +119,7 @@ describe("body attributes", () => {
   });
 
   it("updates with multiple additions and removals - overwrite and new", () => {
-    customRender(
+    render(
       <>
         <Helmet>
           <Body lang="en" hidden />
@@ -140,7 +140,7 @@ describe("body attributes", () => {
   });
 
   it("updates with multiple additions and removals - all new", () => {
-    customRender(
+    render(
       <>
         <Helmet>
           <Body lang="en" hidden />
@@ -167,7 +167,7 @@ describe("body attributes", () => {
     });
 
     it("attributes are not cleared", () => {
-      customRender(<Helmet />);
+      render(<Helmet />);
 
       const bodyTag = document.body;
 
@@ -176,7 +176,7 @@ describe("body attributes", () => {
     });
 
     it("attributes are overwritten if specified in helmet", () => {
-      customRender(
+      render(
         <Helmet>
           <Body data-test="helmet-attr" />
         </Helmet>
@@ -188,7 +188,7 @@ describe("body attributes", () => {
     });
 
     it("attributes are cleared once managed in helmet", () => {
-     customRender(
+     render(
         <Helmet>
           <Body data-test="helmet-attr" />
         </Helmet>,

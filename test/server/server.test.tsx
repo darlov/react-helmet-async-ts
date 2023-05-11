@@ -11,11 +11,11 @@ describe('server', () => {
       expect(context.state).toBeDefined();
       const head = context.state!;
 
-      expect(head.html).toBeDefined();
-      expect(head.html.toString).toBeDefined();
-      expect(head.html.toString()).toBe('');
-      expect(head.html.toComponent).toBeDefined();
-      expect(head.html.toComponent()).toEqual({});
+      expect(head.htmlAttributes).toBeDefined();
+      expect(head.htmlAttributes.toString).toBeDefined();
+      expect(head.htmlAttributes.toString()).toBe('');
+      expect(head.htmlAttributes.toComponent).toBeDefined();
+      expect(head.htmlAttributes.toComponent()).toEqual({});
 
       expect(head.title).toBeDefined();
       expect(head.title.toString).toBeDefined();
@@ -108,11 +108,11 @@ describe('server', () => {
       expect(context.state).toBeDefined();
       const head = context.state!;
 
-      expect(head.html).toBeDefined();
-      expect(head.html.toString).toBeDefined();
-      expect(head.html.toString()).toBe('');
-      expect(head.html.toComponent).toBeDefined();
-      expect(head.html.toComponent()).toEqual({});
+      expect(head.htmlAttributes).toBeDefined();
+      expect(head.htmlAttributes.toString).toBeDefined();
+      expect(head.htmlAttributes.toString()).toBe('');
+      expect(head.htmlAttributes.toComponent).toBeDefined();
+      expect(head.htmlAttributes.toComponent()).toEqual({});
 
       expect(head.title).toBeDefined();
       expect(head.title.toString).toBeDefined();

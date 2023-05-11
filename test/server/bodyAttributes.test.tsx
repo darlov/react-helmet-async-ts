@@ -1,11 +1,11 @@
-import {Body, Helmet, IHelmetData} from '../../src';
+import {Body, Helmet, IHelmetDataContext} from '../../src';
 import {render} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
   describe('Declarative API', () => {
     it('renders body attributes as component', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
           <Body lang="ga" className="myClassName"/>
@@ -14,8 +14,8 @@ describe('server', () => {
       );
 
       expect(context.state).toBeDefined();
-      const {body} = context.state!;
-      const attrs = body.toComponent();
+      const {bodyAttributes} = context.state!;
+      const attrs = bodyAttributes.toComponent();
 
       expect(attrs).toBeDefined();
 
@@ -25,7 +25,7 @@ describe('server', () => {
     });
 
     it('renders body attributes as string', () => {
-      const context: IHelmetData = {};
+      const context: IHelmetDataContext = {};
       render(
         <Helmet>
           <Body lang="ga" className="myClassName"/>
@@ -34,11 +34,11 @@ describe('server', () => {
       );
 
       expect(context.state).toBeDefined();
-      const {body} = context.state!;
+      const {bodyAttributes} = context.state!;
 
-      expect(body).toBeDefined();
-      expect(body.toString).toBeDefined();
-      expect(body.toString()).toMatchSnapshot();
+      expect(bodyAttributes).toBeDefined();
+      expect(bodyAttributes.toString).toBeDefined();
+      expect(bodyAttributes.toString()).toMatchSnapshot();
     });
   });
 });

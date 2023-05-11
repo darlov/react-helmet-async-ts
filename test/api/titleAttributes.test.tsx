@@ -1,4 +1,4 @@
-import { customRender } from "./utils";
+import { render } from "./utils";
 import { Helmet, Title, HELMET_ATTRIBUTE } from "../../src";
 
 describe("title attributes", () => {
@@ -8,7 +8,7 @@ describe("title attributes", () => {
 
   describe("API", () => {
     it("updates title attributes", () => {
-      customRender(
+      render(
         <Helmet>
           <Title itemProp="name" />
         </Helmet>
@@ -21,7 +21,7 @@ describe("title attributes", () => {
     });
 
     it("sets attributes based on the deepest nested component", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Title lang="en" hidden />
@@ -40,7 +40,7 @@ describe("title attributes", () => {
     });
 
     it("handles valueless attributes", () => {
-      customRender(
+      render(
         <Helmet>
           <Title hidden />
         </Helmet>
@@ -53,7 +53,7 @@ describe("title attributes", () => {
     });
 
     it("clears title attributes that are handled within helmet", () => {
-      customRender(
+      render(
         <Helmet>
           <Title lang="en" hidden />
         </Helmet>,

@@ -1,9 +1,9 @@
-import { customRender } from "./utils";
+import { render } from "./utils";
 import { Html, Helmet, HELMET_ATTRIBUTE } from "../../src";
 
 describe("html attributes", () => {
   it("updates html attributes", () => {
-    customRender(
+    render(
       <Helmet>
         <Html className="myClassName" lang="en" />
       </Helmet>
@@ -17,7 +17,7 @@ describe("html attributes", () => {
   });
 
   it("sets attributes based on the deepest nested component", () => {
-    customRender(
+    render(
       <div>
         <Helmet>
           <Html lang="en" />
@@ -35,7 +35,7 @@ describe("html attributes", () => {
   });
 
   it("handles valueless attributes", () => {
-    customRender(
+    render(
       <Helmet>
         <Html data-amp />
       </Helmet>
@@ -48,7 +48,7 @@ describe("html attributes", () => {
   });
 
   it("clears html attributes that are handled within helmet", () => {
-    customRender(
+    render(
       <Helmet>
         <Html lang="en" data-amp />
       </Helmet>,
@@ -63,7 +63,7 @@ describe("html attributes", () => {
   });
 
   it("updates with multiple additions and removals - overwrite and new", () => {
-    customRender(
+    render(
       <Helmet>
         <Html lang="en" data-amp />
       </Helmet>,
@@ -82,7 +82,7 @@ describe("html attributes", () => {
   });
 
   it("updates with multiple additions and removals - all new", () => {
-    customRender(
+    render(
       <Helmet>
         <Html lang="en" data-amp />
       </Helmet>,
@@ -107,7 +107,7 @@ describe("html attributes", () => {
     });
 
     it("are not cleared", () => {
-      customRender(<Helmet />);
+      render(<Helmet />);
 
       const htmlTag = document.getElementsByTagName("html")[0];
 
@@ -116,7 +116,7 @@ describe("html attributes", () => {
     });
 
     it("overwritten if specified in helmet", () => {
-      customRender(
+      render(
         <Helmet>
           <Html data-test="helmet-attr" />
         </Helmet>
@@ -128,7 +128,7 @@ describe("html attributes", () => {
     });
 
     it("cleared once it is managed in helmet", () => {
-      customRender(
+      render(
         <Helmet>
           <Html data-test="helmet-attr" />
         </Helmet>,

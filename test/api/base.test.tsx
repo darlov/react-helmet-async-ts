@@ -1,10 +1,10 @@
 import { Base, Helmet, HELMET_ATTRIBUTE } from "../../src";
-import { customRender } from "./utils";
+import { render } from "./utils";
 
 describe("base tag", () => {
   describe("Declarative API", () => {
     it("updates base tag", () => {
-      customRender(
+      render(
         <Helmet>
           <Base href="http://mysite.com/" />
         </Helmet>
@@ -22,7 +22,7 @@ describe("base tag", () => {
     });
 
     it("clears the base tag if one is not specified", () => {
-      customRender(
+      render(
           <Helmet>
             <Base href="http://mysite.com/" />
           </Helmet>,
@@ -36,7 +36,7 @@ describe("base tag", () => {
     });
 
     it("tags without 'href' are not accepted", () => {
-      customRender(
+      render(
         <Helmet>
           <Base property="won't work" />
         </Helmet>
@@ -49,7 +49,7 @@ describe("base tag", () => {
     });
 
     it("sets base tag based on deepest nested component", () => {
-      customRender(
+      render(
         <div>
           <Helmet>
             <Base href="http://mysite.com" />
@@ -74,7 +74,7 @@ describe("base tag", () => {
     });
 
     it("does not render tag when primary attribute is null", () => {
-      customRender(
+      render(
         <Helmet>
           <Base href={undefined} />
         </Helmet>
