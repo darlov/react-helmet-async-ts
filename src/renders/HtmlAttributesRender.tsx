@@ -1,83 +1,40 @@
 import { FC, useEffect } from "react";
-import { TagProps } from "../types";
+import {ITagProps, TagNames} from "../types";
 import {
   getHtmlAttributesFromHtmlElement,
   renderToHtmlElement,
-   createComponent,
+  createComponent,
 } from "../utils";
-import {createRoot} from "react-dom/client";
 
 interface IDocumentElementRenderProps {
-  tag: TagProps | undefined;
-  tagName: keyof HTMLElementTagNameMap;
+  tag: ITagProps | undefined;
   attachTo: ParentNode | Element;
 }
 
-const isElement = (attachTo: ParentNode | Element): attachTo is Element => {
-  return "insertAdjacentHTML" in attachTo;
-};
-
-const getOrCreateHtmlElement = (
-  htmlElement: Element,
-  tagName: keyof HTMLElementTagNameMap,
+const getHtmlElement = (
+  tagName: TagNames,
   attachTo: ParentNode | Element
-): [boolean, Element] => {
-  let isCreated = false;
-  const element = attachTo.querySelector(tagName);
-  if (element === null) {
-    if (isElement(attachTo)) {
-      attachTo.insertAdjacentHTML("beforeend", htmlElement.outerHTML);
-
-      const attachedHtmlElement = attachTo.querySelector(tagName);
-      if (attachedHtmlElement == null) {
-        throw new Error(`Couldn't found element ${tagName} in the ${htmlElement.outerHTML}`);
-      }
-
-      isCreated = true;
-
-      return [isCreated, attachedHtmlElement];
-    }
-
-    throw new Error(`Couldn't found html element ${tagName} in the document`);
-  }
-  return [isCreated, element];
+): Element => {
+  return attachTo.querySelector(tagName)!;
 };
 
 export const HtmlAttributesRender: FC<IDocumentElementRenderProps> = ({
   tag,
-  tagName,
   attachTo,
 }) => {
   
-  createRoot
   useEffect(() => {
     if (tag !== undefined) {
       const htmlElement = renderToHtmlElement(
-        createComponent(tagName, tag),
-        tagName
+        createComponent(tag),
+        tag.tagType
       );
-      const [isCreated, attachedHtmlElement] = getOrCreateHtmlElement(
-        htmlElement,
-        tagName,
-        attachTo
-      );
+      const attachedHtmlElement = getHtmlElement(tag.tagType, attachTo);
       const attributes = getHtmlAttributesFromHtmlElement(htmlElement);
 
       attributes.forEach(attr => attachedHtmlElement.setAttribute(attr.name, attr.value));
-
-      if(tag.children !== undefined){
-        attachedHtmlElement.innerHTML = htmlElement.innerHTML;
-      }
-      
       return () => {
-        if (isCreated) {
-          attachedHtmlElement.remove();
-        } else {
           attributes.forEach(attr => attachedHtmlElement.removeAttribute(attr.name));
-          if(tag.children !== undefined){
-            attachedHtmlElement.innerHTML = "";
-          }
-        }
       };
     }
   }, [tag]);

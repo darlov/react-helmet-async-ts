@@ -1,8 +1,8 @@
 import {
   IHelmetDataContext,
   IHelmetInstanceState,
-  IHelmetState,
-  UpdateInstanceCallback
+  IHelmetState, TagPriorityConfig,
+  ModifyInstanceCallback
 } from "./types";
 import {_, addUniqueItem, buildServerState, buildState, removeItem} from "./utils";
 
@@ -10,7 +10,7 @@ export class HelmetData {
   private _instances: IHelmetInstanceState[] = [];
   private _helmetState?: IHelmetState;
 
-  constructor(private _context?: IHelmetDataContext, private _canUseDOM = typeof document !== 'undefined') {
+  constructor(private _priority: TagPriorityConfig[] | boolean, private _context?: IHelmetDataContext, private _canUseDOM = typeof document !== 'undefined') {
     this.buildState();
   }
 
@@ -32,19 +32,19 @@ export class HelmetData {
     this.buildState();
   }
 
-  addItem: UpdateInstanceCallback = (instance, propName, value) => {
-    instance[propName] = addUniqueItem(instance[propName] as any[], value)
+  addItem: ModifyInstanceCallback = (instance, value) => {
+    instance[value.tagType] = addUniqueItem(instance[value.tagType] as any[], value)
     this.buildState();
   }
 
-  removeItem: UpdateInstanceCallback = (instance, propName, value) => {
-    instance[propName] = removeItem(instance[propName] as any[], value)
+  removeItem: ModifyInstanceCallback = (instance, value) => {
+    instance[value.tagType] = removeItem(instance[value.tagType] as any[], value)
     this.buildState();
   }
 
   private buildState = () => {
     const orderedInstances = _.sortBy(this._instances, "id");
-    this._helmetState = buildState(orderedInstances);
+    this._helmetState = buildState(orderedInstances, this._priority);
 
     if (!this._canUseDOM && this._context) {
       this._context.state = buildServerState(this._helmetState)

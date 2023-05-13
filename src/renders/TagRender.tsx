@@ -1,13 +1,9 @@
 import {FC, useEffect, useMemo} from "react";
 import {IHelmetState} from "../types";
-import {MetaRender} from "./MetaRender";
-import {StyleRender} from "./StyleRender";
-import {ScriptRender} from "./ScriptRender";
-import {LinkRender} from "./LinkRender";
-import {NoscriptRender} from "./NoscriptRender";
 import {HtmlAttributesRender} from "./HtmlAttributesRender";
 import {TitleTestRender} from "./TitleTestRender";
 import {createRoot} from "react-dom/client";
+import {TagsRender} from "./TagsRender";
 
 interface ITagRenderProps {
   state?: IHelmetState;
@@ -37,18 +33,16 @@ export const TagRender: FC<ITagRenderProps> = ({state}) => {
   if (state) {
     return (
       <>
-        {/*<HtmlAttributesRender tag={state.titleTag} tagName={"title"} attachTo={document.head}/>*/}
-        <HtmlAttributesRender tag={state.bodyTag} tagName={"body"} attachTo={document}/>
-        <HtmlAttributesRender tag={state.htmlTag} tagName={"html"} attachTo={document}/>
-        <HtmlAttributesRender tag={state.baseTag} tagName={"base"} attachTo={document.head}/>
+        <HtmlAttributesRender tag={state.bodyAttributes} attachTo={document}/>
+        <HtmlAttributesRender tag={state.htmlAttributes} attachTo={document}/>
+
         <TitleTestRender tag={state.titleTag} />
 
-
-        <MetaRender tags={state.metaTags}/>
-        <StyleRender tags={state.styleTags}/>
-        <ScriptRender tags={state.scriptTags}/>
-        <LinkRender tags={state.linkTags}/>
-        <NoscriptRender tags={state.noscriptTags}/>
+        <TagsRender tags={state.metaTags}/>
+        <TagsRender tags={state.styleTags}/>
+        <TagsRender tags={state.scriptTags}/>
+        <TagsRender tags={state.linkTags}/>
+        <TagsRender tags={state.noscriptTags}/>
       </>
     );
   }

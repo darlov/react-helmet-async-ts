@@ -1,10 +1,10 @@
 import {FC, ReactNode, useId, useMemo} from "react";
 import {
-  IHelmetInstanceState,
+  IHelmetInstanceState, TagName,
 } from "./types";
 import {useHelmetContext} from "./HelmetProvider";
 import {Title} from "./tags";
-import {createActionsData, HelmetScopedContext, IHelmetScopedContextData} from "./HelmetScopedProvider";
+import {createActionsData, HelmetScopedContext, HelmetScopedContextData} from "./HelmetScopedProvider";
 import {useServerSideEffect} from "./hooks/useServerSideEffect";
 
 interface IHelmetProps {
@@ -31,17 +31,9 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
     () => !rootContext.canUseDOM,
     [instanceState, rootContext.addInstance, rootContext.removeInstance]);
 
-  const context = useMemo<IHelmetScopedContextData>(() => {
+  const context = useMemo<HelmetScopedContextData>(() => {
     return {
-      baseActions: createActionsData(instanceState, "baseTags", rootContext),
-      htmlActions: createActionsData(instanceState, "htmlTags", rootContext),
-      bodyActions: createActionsData(instanceState, "bodyTags", rootContext),
-      scriptActions: createActionsData(instanceState, "scriptTags", rootContext),
-      noscriptActions: createActionsData(instanceState, "noscriptTags", rootContext),
-      styleActions: createActionsData(instanceState, "styleTags", rootContext),
-      titleActions: createActionsData(instanceState, "titleTags", rootContext),
-      metaActions: createActionsData(instanceState, "metaTags", rootContext),
-      linkActions: createActionsData(instanceState, "linkTags", rootContext)
+      actions: createActionsData(instanceState, rootContext)
     }
   }, [instanceState, rootContext.addItem, rootContext.removeItem])
 

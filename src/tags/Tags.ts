@@ -8,7 +8,9 @@ import {
   primaryLinkAttributes,
   primaryMetaAttributes,
   ScriptProps,
-  StyleProps, TitleProps
+  StyleProps,
+  TagName,
+  TitleProps
 } from "../types";
 import {createTagComponent} from "./CommonTag";
 import {_} from "../utils";
@@ -25,13 +27,13 @@ const titleEmptyFallback = () : TitleProps => {
   return  {children: ""};
 };
 
-export const Title = createTagComponent("titleActions", undefined, titleEmptyFallback);
-export const Meta = createTagComponent("metaActions", isMetaValid);
-export const Base = createTagComponent("baseActions", isBaseValid);
-export const Body = createTagComponent("bodyActions", isBodyValid);
-export const Html = createTagComponent("htmlActions", isHtmlValid);
-export const Link = createTagComponent("linkActions", isLinkValid);
-export const Noscript = createTagComponent("noscriptActions", isNoscriptValid);
-export const Script = createTagComponent("scriptActions", isScriptValid);
-export const Style = createTagComponent("styleActions", isStyleValid);
+export const Title = createTagComponent(TagName.title, undefined, titleEmptyFallback);
+export const Meta = createTagComponent(TagName.meta, isMetaValid);
+export const Base = createTagComponent(TagName.base, isBaseValid);
+export const Body = createTagComponent(TagName.body, isBodyValid);
+export const Html = createTagComponent(TagName.html, isHtmlValid);
+export const Link = createTagComponent(TagName.link, isLinkValid);
+export const Noscript = createTagComponent(TagName.noscript, isNoscriptValid);
+export const Script = createTagComponent(TagName.script, isScriptValid);
+export const Style = createTagComponent(TagName.style, isStyleValid);
 

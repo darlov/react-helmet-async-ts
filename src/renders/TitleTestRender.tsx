@@ -1,12 +1,12 @@
 import { FC } from "react";
-import {StyleProps, TitleProps} from "../types";
+import {ITagProps, ITypedTagProps, StyleProps, TagName, TagPropsMap, TitleProps} from "../types";
 import { createPortal } from "react-dom";
 
 interface ITitleTestRenderProps {
-  tag: TitleProps | undefined
+  tag: ITypedTagProps<TagName.title> | undefined
 }
 export const TitleTestRender: FC<ITitleTestRenderProps> = ({tag}) => {
   return tag != undefined 
-    ? createPortal(<title { ...tag } data-rh={ "true" }/>, document.head)
+    ? createPortal(<tag.tagType { ...tag.tagProps } data-rh={ "true" }/>, document.head)
     : null;
 }

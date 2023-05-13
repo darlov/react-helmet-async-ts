@@ -5,7 +5,12 @@ import {
   useContext,
   useMemo,
 } from "react";
-import {IHelmetDataContext, IHelmetInstanceState, UpdateInstanceCallback} from "./types";
+import {
+  IHelmetDataContext,
+  IHelmetInstanceState,
+  TagPriorityConfig,
+  ModifyInstanceCallback
+} from "./types";
 import {TagRender} from "./renders";
 import {HelmetData} from "./HelmetData";
 import {useForceUpdate} from "./hooks/useForceUpdate";
@@ -13,8 +18,8 @@ import {useForceUpdate} from "./hooks/useForceUpdate";
 interface IHelmetContextData {
   addInstance: (state: IHelmetInstanceState) => void;
   removeInstance: (state: IHelmetInstanceState) => void;
-  addItem: UpdateInstanceCallback,
-  removeItem: UpdateInstanceCallback
+  addItem: ModifyInstanceCallback,
+  removeItem: ModifyInstanceCallback
   canUseDOM: boolean;
 }
 
@@ -22,14 +27,15 @@ interface IHelmetContextProviderProps {
   value?: IHelmetDataContext,
   children?: ReactNode;
   canUseDOM?: boolean;
+  priority?: TagPriorityConfig[] | boolean
 }
 
 const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
 
-export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, canUseDOM, children}) => {
+export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, canUseDOM, children, priority = true}) => {
   const forceUpdate = useForceUpdate()
   
-  const data = useMemo(() => new HelmetData(value, canUseDOM), [value, canUseDOM])
+  const data = useMemo(() => new HelmetData(priority, value, canUseDOM), [value, canUseDOM])
   const context = useMemo<IHelmetContextData>(() => {
     return {
       addInstance: (instance) => {
@@ -40,12 +46,12 @@ export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, c
         data.removeInstance(instance)
         forceUpdate();
       },
-      addItem: (instance, propName, value) => {
-        data.addItem(instance, propName, value);
+      addItem: (instance, value) => {
+        data.addItem(instance, value);
         forceUpdate();
       },
-      removeItem: (instance, propName, value) => {
-        data.removeItem(instance, propName, value);
+      removeItem: (instance, value) => {
+        data.removeItem(instance, value);
         forceUpdate();
       },
       canUseDOM: data.canUseDOM,

@@ -201,12 +201,13 @@ describe('server', () => {
     it('prioritizes SEO tags when asked to', () => {
       const context: IHelmetDataContext = {};
       render(
-        <Helmet prioritizeSeoTags>
+        <Helmet>
           <Link rel="notImportant" href="https://www.chipotle.com" />
           <Link rel="canonical" href="https://www.tacobell.com" />
           <Meta property="og:title" content="A very important title" />
         </Helmet>,
-        context
+        context,
+        true
       );
 
       expect(context.state).toBeDefined();

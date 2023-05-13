@@ -1,46 +1,52 @@
-import {FC, useCallback, useEffect} from "react";
-import {TagProps} from "../types";
-import {IHelmetScopedContextData, ITagsActions, useScopedHelmetContext} from "../HelmetScopedProvider";
+import {FC, useCallback, useEffect, useMemo} from "react";
+import {ITypedTagProps, TagName, TagProps, TagPropsMap} from "../types";
+import {HelmetScopedContextData, ITagsActions, useScopedHelmetContext} from "../HelmetScopedProvider";
 import {useHelmetContext} from "../HelmetProvider";
 import {_} from "../utils";
 import {useServerSideEffect} from "../hooks/useServerSideEffect";
 
-interface ICommonTagProps<T extends TagProps> {
-  tagProps: T,
-  isValid?: (value: T) => boolean,
+interface ICommonTagProps<T extends TagName> {
+  tagType: T,
+  tagProps: TagPropsMap[T],
+  isValid?: (value: TagPropsMap[T]) => boolean,
   actions: ITagsActions<T>
-  emptyFallback?: () => T
+  emptyFallback?: () => TagPropsMap[T]
 }
 
-type ReturnTypeComponent<T extends TagProps> = ReturnType<FC<ICommonTagProps<T>>>
-type PropType<T extends TagProps> = Parameters<FC<ICommonTagProps<T>>>[0]
+type ReturnTypeComponent<T extends TagName> = ReturnType<FC<ICommonTagProps<T>>>
+type PropType<T extends TagName> = Parameters<FC<ICommonTagProps<T>>>[0]
 
-export const CommonTag = <T extends TagProps, >({
+export const CommonTag = <T extends TagName, >({
+                                                 tagType,
                                                   tagProps,
                                                   isValid,
                                                   actions,
                                                   emptyFallback
                                                 }: PropType<T>): ReturnTypeComponent<T> => {
   const rootContext = useHelmetContext();
+  
+  const typeProps = useMemo(():ITypedTagProps<T> => {
+    return {tagProps, tagType: tagType}
+  }, [tagProps, tagType])
 
   const addCallback = useCallback(() => {
     if (isValid) {
-      if (isValid(tagProps)) {
-        actions.add(tagProps);
+      if (isValid(typeProps.tagProps)) {
+        actions.add(typeProps);
         return () => {
-          actions.add(tagProps);
+          actions.add(typeProps);
         };
       }
     } else {
-      if (emptyFallback && _.isEmpty(tagProps)) {
+      if (emptyFallback && _.isEmpty(typeProps.tagProps)) {
         tagProps = emptyFallback()
       }
-      actions.add(tagProps);
+      actions.add(typeProps);
       return () => {
-        actions.add(tagProps);
+        actions.add(typeProps);
       };
     }
-  }, [tagProps, isValid, actions, emptyFallback])
+  }, [typeProps, isValid, actions, emptyFallback])
 
   useServerSideEffect(
     () => addCallback(),
@@ -50,19 +56,16 @@ export const CommonTag = <T extends TagProps, >({
   return null;
 }
 
-type ExtractTagType<T> = T extends ITagsActions<infer K> ? K : never;
-
 export const createTagComponent =
   <
-    K extends keyof IHelmetScopedContextData,
-    T extends ExtractTagType<IHelmetScopedContextData[K]>
+    T extends TagName,
   >
   (
-    actionsProp: K,
-    isValid?: (value: T) => boolean,
-    emptyFallback?: () => T): FC<T> => {
+    tagType: T,
+    isValid?: (value: TagPropsMap[T]) => boolean,
+    emptyFallback?: () => TagPropsMap[T]): FC<TagPropsMap[T]> => {
     return (props) => {
-      const actions = useScopedHelmetContext()[actionsProp] as ITagsActions<T>;
-      return <CommonTag tagProps={props} actions={actions} isValid={isValid} emptyFallback={emptyFallback}/>
+      const actions = useScopedHelmetContext().actions;
+      return <CommonTag tagType={tagType} tagProps={props} actions={actions} isValid={isValid} emptyFallback={emptyFallback}/>
     }
   }
