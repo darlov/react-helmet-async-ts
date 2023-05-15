@@ -1,7 +1,5 @@
 import {FC, ReactNode, useId, useMemo} from "react";
-import {
-  IHelmetInstanceState, TagName,
-} from "./types";
+import {IHelmetInstanceState} from "./types";
 import {useHelmetContext} from "./HelmetProvider";
 import {Title} from "./tags";
 import {createActionsData, HelmetScopedContext, HelmetScopedContextData} from "./HelmetScopedProvider";
@@ -17,7 +15,11 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
   const rootContext = useHelmetContext();
   const sourceId = useId();
   const id = useMemo(() => {
-    return parseInt(sourceId.replace(":r", "").replace(":", ""), 32);
+    const match = sourceId.match(/[rR]([a-z0-9]+):/);
+    if (match === null) {
+      throw new Error(`Couldn't parse id from useId() hook for Helmet instance state. Error value: ${sourceId}`)
+    }
+    return parseInt(match[1], 32);
   }, [sourceId])
 
   const instanceState = useMemo<IHelmetInstanceState>(() => {

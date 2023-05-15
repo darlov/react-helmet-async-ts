@@ -28,6 +28,7 @@ interface IHelmetContextProviderProps {
   children?: ReactNode;
   canUseDOM?: boolean;
   priority?: TagPriorityConfig[] | boolean
+  overrideExistingTags?: boolean
 }
 
 const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
