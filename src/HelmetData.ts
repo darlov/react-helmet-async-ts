@@ -10,7 +10,7 @@ export class HelmetData {
   private _instances: IHelmetInstanceState[] = [];
   private _helmetState?: IHelmetState;
 
-  constructor(private _priority: TagPriorityConfig[] | boolean, private _context?: IHelmetDataContext, private _canUseDOM = typeof document !== 'undefined') {
+  constructor(private _priority: TagPriorityConfig[] | undefined, private _context?: IHelmetDataContext, private _canUseDOM = typeof document !== 'undefined') {
     this.buildState();
   }
 

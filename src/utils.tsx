@@ -63,8 +63,9 @@ export namespace _ {
 
   export const clear = <T, >(array: T[] | undefined) => {
     if (array !== undefined && array.length > 0) {
-      array.splice(0, array.length);
+      return array.splice(0, array.length);
     }
+    return [];
   };
 
   export const isEmpty = (obj: Record<string, any>) => {
@@ -112,7 +113,7 @@ export namespace _ {
     if (index > -1) {
       return elements.splice(index, 1);
     }
-    return elements;
+    return [];
   };
 }
 
@@ -222,7 +223,7 @@ const mergeAllByPrimaryAttribute = <T extends keyof HelmetTags, TElement = Helme
   return result;
 };
 
-export const buildState = (instances: IHelmetInstanceState[], priority: TagPriorityConfig[] | boolean): IHelmetState => {
+export const buildState = (instances: IHelmetInstanceState[], priority: TagPriorityConfig[] | undefined): IHelmetState => {
   const state: IHelmetState = {
     titleTag: undefined,
     baseTag: undefined,
@@ -265,59 +266,79 @@ export const buildState = (instances: IHelmetInstanceState[], priority: TagPrior
     );
   }
 
-  const priorityConfig = typeof priority == "boolean"
-    ? priority ? DefaultTagPriorityConfig : undefined
-    : priority;
+  const priorityConfig = priority ?? DefaultTagPriorityConfig;
 
-  if (priorityConfig) {
-    state.headerTags = buildTagsPriority(state, priorityConfig)
-  }
+  state.headerTags = buildHeaderTags(state, priorityConfig);
+
 
   return state;
 };
 
-const buildTagsPriority = (state: IHelmetState, priorityConfig: TagPriorityConfig[]): TypedTagProps[] => {
-  let priorities: TypedTagProps[] = []
+const addTitle = (state: IHelmetState, priorities: TypedTagProps[]) => {
+  if (state.titleTag) {
+    priorities.push(state.titleTag);
+    state.titleTag = undefined;
+  }
+}
+
+const addBase = (state: IHelmetState, priorities: TypedTagProps[]) => {
+  if (state.baseTag) {
+    priorities.push(state.baseTag)
+    state.baseTag = undefined;
+  }
+}
+
+
+const buildHeaderTags = (state: IHelmetState, priorityConfig: TagPriorityConfig[]): TypedTagProps[] => {
+  let headerTags: TypedTagProps[] = []
   for (const config of priorityConfig) {
     switch (config.tagName) {
       case TagName.title:
-        if (state.titleTag) {
-          priorities.push(state.titleTag);
-          state.titleTag = undefined;
-        }
+        addTitle(state, headerTags);
         break
       case TagName.base:
-        if (state.baseTag) {
-          priorities.push(state.baseTag)
-          state.baseTag = undefined;
-        }
+        addBase(state, headerTags);
         break
       case TagName.meta:
-        priorities.push(...getMatchedTags(state.metaTags, config))
+        headerTags.push(...getMatchedTags(state.metaTags, config))
         break
       case TagName.style:
-        priorities.push(...getMatchedTags(state.styleTags, config))
+        headerTags.push(...getMatchedTags(state.styleTags, config))
         break
       case TagName.link:
-        priorities.push(...getMatchedTags(state.linkTags, config))
+        headerTags.push(...getMatchedTags(state.linkTags, config))
         break
       case TagName.script:
-        priorities.push(...getMatchedTags(state.scriptTags, config))
+        headerTags.push(...getMatchedTags(state.scriptTags, config))
         break
       case TagName.noscript:
-        priorities.push(...getMatchedTags(state.noscriptTags, config))
+        headerTags.push(...getMatchedTags(state.noscriptTags, config))
         break
     }
   }
-  return priorities
+  
+  if(state.titleTag){
+    addTitle(state, headerTags);
+  }
+
+  if (state.baseTag) {
+    addBase(state, headerTags);
+  }
+
+  headerTags.push(..._.clear(state.metaTags));
+  headerTags.push(..._.clear(state.styleTags));
+  headerTags.push(..._.clear(state.linkTags));
+  headerTags.push(..._.clear(state.scriptTags));
+  headerTags.push(..._.clear(state.noscriptTags));
+
+  return headerTags
 }
 
 const getMatchedTags = <T extends TagName, >(tags: ITypedTagProps<T>[], config: TagPriorityConfig) => {
   const priorities: TypedTagProps[] = [];
   for (const tag of tags) {
     if (isTagMatch(tag, config)) {
-      priorities.push(tag);
-      _.remove(tags, tag);
+      priorities.push(..._.remove(tags, tag));
     }
   }
 

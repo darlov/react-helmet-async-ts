@@ -27,13 +27,13 @@ interface IHelmetContextProviderProps {
   value?: IHelmetDataContext,
   children?: ReactNode;
   canUseDOM?: boolean;
-  priority?: TagPriorityConfig[] | boolean
+  priority?: TagPriorityConfig[]
   overrideExistingTags?: boolean
 }
 
 const HelmetContext = createContext<IHelmetContextData | undefined>(undefined);
 
-export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, canUseDOM, children, priority = true}) => {
+export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, canUseDOM, children, priority}) => {
   const forceUpdate = useForceUpdate()
   
   const data = useMemo(() => new HelmetData(priority, value, canUseDOM), [value, canUseDOM])
