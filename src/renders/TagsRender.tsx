@@ -1,7 +1,6 @@
 import {ITypedTagProps, MetaProps, TagName} from "../types";
 import {createElement, FC, memo, ReactNode, useEffect, useInsertionEffect, useMemo, useState} from "react";
 import {createPortal, flushSync} from "react-dom";
-import {createRoot, Root} from "react-dom/client";
 
 interface ITagsRenderProps<T extends TagName> {
   tags: ITypedTagProps<T>[]
@@ -15,12 +14,33 @@ interface ITagContainerProps {
   tagComponents: ReactNode
 }
 
-const TagContainer: FC<ITagContainerProps> = ({fragment, tagComponents}) => {
+const HeadTagRender: FC<ITagContainerProps> = ({fragment, tagComponents}) => {
 
   useEffect(() => {
-    document.head.appendChild(fragment)
+    const cloned = fragment.cloneNode(true);
+    const headNodes: ChildNode[] = [];
+    const attributeNodes: ChildNode[] = [];
+
+    for (const node of [...cloned.childNodes]) {
+      node.nodeName
+      switch(node.nodeName){
+        case TagName.title:
+          break;
+      }
+    }
+   
+    const headChildNodes = document.head.childNodes;
+
+    if (headChildNodes.length > 0){
+     
+    }else {
+      document.head.appendChild(cloned)
+    }
+  
     return () => {
-       document.head.removeChild(fragment);
+      headNodes.forEach(ch => {
+        document.head.removeChild(ch)
+      })
     }
   }, [fragment, tagComponents]);
 
@@ -34,43 +54,13 @@ const TagsRenderC = <T extends TagName, >({tags}: PropType<T>): ReturnTypeCompon
   const placeHolder = useMemo(() => {
     return document.createDocumentFragment();
   }, []);
-
-  // const [root, setRoot] = useState<Root | undefined>()
-  //
-  // useEffect(() => {
-  //   console.log("createdRoot")
-  //   const createdRoot = createRoot(placeHolder);
-  //   setRoot(createdRoot)
-  //
-  //   return () => {
-  //     setRoot(undefined)
-  //     setTimeout(() => {
-  //       console.log("unmount")
-  //       createdRoot.unmount();
-  //     }, 0)
-  //   };
-  // }, [setRoot, placeHolder])
-  //
-  // if (root != undefined) {
-  //   setTimeout(() => {
-  //     flushSync(() => {
-  //       console.log("render")
-  //       root.render((tags.map((m, i) => createElement(m.tagType, {
-  //         ...m.tagProps,
-  //         key: i,
-  //         "data-rh": "true"
-  //       }))))
-  //     })
-  //   }, 0);
-  // }
-
-
-  const tagComponents = tags.map((m, i) => createElement(m.tagType, {...m.tagProps, key: i, "data-rh": "true"}))
+  
+  const tagComponents = tags.map((m, i) => createElement(m.tagType, {...m.tagProps, key: i, "data-rh": "true"}));
 
 
   return <>
     {createPortal(tagComponents, placeHolder)}
-    <TagContainer fragment={placeHolder} tagComponents={tagComponents}/>
+    <HeadTagRender fragment={placeHolder} tagComponents={tagComponents}/>
   </>
 }
 

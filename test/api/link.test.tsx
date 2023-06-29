@@ -153,10 +153,11 @@ describe("link tags", () => {
       const thirdTag = existingTags[2];
 
       expect(firstTag).toBeInstanceOf(Element);
+      expect(firstTag.outerHTML).toMatchSnapshot();
       expect(firstTag.getAttribute).toBeDefined();
       expect(firstTag.getAttribute("href")).toBe("http://localhost/helmet/innercomponent");
       expect(firstTag.getAttribute("rel")).toBe("canonical");
-      expect(firstTag.outerHTML).toMatchSnapshot();
+
 
       expect(secondTag).toBeInstanceOf(Element);
       expect(secondTag.outerHTML).toMatchSnapshot();
@@ -167,12 +168,12 @@ describe("link tags", () => {
       expect(secondTag.getAttribute("media")).toBe("all");
 
       expect(thirdTag).toBeInstanceOf(Element);
+      expect(thirdTag.outerHTML).toMatchSnapshot();
       expect(thirdTag.getAttribute).toBeDefined();
       expect(thirdTag.getAttribute("href")).toBe("http://localhost/inner.css");
       expect(thirdTag.getAttribute("rel")).toBe("stylesheet");
       expect(thirdTag.getAttribute("type")).toBe("text/css");
       expect(thirdTag.getAttribute("media")).toBe("all");
-      expect(thirdTag.outerHTML).toMatchSnapshot();
     });
 
     it("allows duplicate link tags if specified in the same component", () => {
