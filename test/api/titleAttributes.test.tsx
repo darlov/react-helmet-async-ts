@@ -35,7 +35,7 @@ describe("title attributes", () => {
       const titleTag = document.getElementsByTagName("title")[0];
 
       expect(titleTag.getAttribute("lang")).toBe("ja");
-      expect(titleTag.getAttribute("hidden")).toBe("");
+      expect(titleTag.getAttribute("hidden")).toBe(null);
       expect(titleTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
     });
 

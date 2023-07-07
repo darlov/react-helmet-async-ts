@@ -1,1 +1,1 @@
-export { TagRender } from "./TagRender";
+export { TagsRender } from "./TagsRender";

@@ -1,6 +1,7 @@
 import {renderToStaticMarkup} from 'react-dom/server';
 import {Base, Helmet, IHelmetDataContext} from '../../src';
-import {render} from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
+import {expect} from "vitest";
 
 describe('server', () => {
   describe('Declarative API', () => {
@@ -13,18 +14,15 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const head = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const baseComponents = context.state!.headerTags.toComponent();
+      expect(baseComponents).toHaveLength(1);
       
-      expect(head.base).toBeDefined();
-      expect(head.base.toComponent).toBeDefined();
+      const base = baseComponents[0];
+      expect(base).toBeDefined()
+      expect(base).toEqual(expect.objectContaining({type: 'base'}));
 
-      const baseComponent = head!.base.toComponent();
-
-      expect(baseComponent).toBeDefined()
-      expect(baseComponent).toEqual(expect.objectContaining({type: 'base'}));
-
-      const markup = renderToStaticMarkup(baseComponent);
+      const markup = renderToStaticMarkup(base);
 
       expect(markup).toMatchSnapshot();
     });
@@ -38,12 +36,9 @@ describe('server', () => {
         context
       );
 
-      const head = context.state;
-
-      expect(head).toBeDefined();
-      expect(head!.base).toBeDefined();
-      expect(head!.base.toString).toBeDefined();
-      expect(head!.base.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      expect(headerTags.toString()).toMatchSnapshot();
     });
   });
 });

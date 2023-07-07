@@ -153,7 +153,7 @@ describe("title", () => {
     it("does not encode all characters with HTML character", () => {
       render(
         <Helmet>
-          <Title dangerouslySetInnerHTML={{__html: "“New Post”"}} />
+          <Title dangerouslySetInnerHTML={{__html: "“New Post” & and"}} />
         </Helmet>
       );
 

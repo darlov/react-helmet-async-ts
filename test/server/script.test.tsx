@@ -1,5 +1,5 @@
 import {Helmet, IHelmetDataContext, Script} from '../../src';
-import {render} from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 
@@ -15,21 +15,15 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {script} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const scriptComponents = context.state!.headerTags.toComponent();
+      expect(scriptComponents).toHaveLength(2);
 
-      expect(script).toBeDefined();
-      expect(script.toComponent).toBeDefined();
-
-      const scriptComponent = script.toComponent();
-
-      expect(scriptComponent).toHaveLength(2);
-
-      scriptComponent.forEach(script => {
+      scriptComponents.forEach(script => {
         expect(script).toEqual(expect.objectContaining({type: 'script'}));
       });
 
-      const markup = renderToStaticMarkup(<>{scriptComponent}</>);
+      const markup = renderToStaticMarkup(<>{scriptComponents}</>);
 
       expect(markup).toMatchSnapshot();
     });
@@ -44,12 +38,9 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {script} = context.state!;
-
-      expect(script).toBeDefined();
-      expect(script.toString).toBeDefined();
-      expect(script.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      expect(headerTags.toString()).toMatchSnapshot();
     });
   });
 });

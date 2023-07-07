@@ -1,6 +1,6 @@
 // @vitest-environment node
 import {Helmet, IHelmetDataContext, Noscript} from '../../src';
-import { render } from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
@@ -15,21 +15,15 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {noscript} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const noscriptComponents = context.state!.headerTags.toComponent();
+      expect(noscriptComponents).toHaveLength(2);
 
-      expect(noscript).toBeDefined();
-      expect(noscript.toComponent).toBeDefined();
-
-      const noscriptComponent = noscript.toComponent();
-      
-      expect(noscriptComponent).toHaveLength(2);
-
-      noscriptComponent.forEach(noscript => {
+      noscriptComponents.forEach(noscript => {
         expect(noscript).toEqual(expect.objectContaining({ type: 'noscript' }));
       });
 
-      const markup = renderToStaticMarkup(<>{noscriptComponent}</>);
+      const markup = renderToStaticMarkup(<>{noscriptComponents}</>);
 
       expect(markup).toMatchSnapshot();
     });

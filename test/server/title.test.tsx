@@ -1,7 +1,8 @@
 import {Helmet, IHelmetDataContext, Title} from '../../src';
 
-import { render } from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
+import {expect} from "vitest";
 
 
 describe('server', () => {
@@ -15,32 +16,11 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
 
-      expect(title).toBeDefined();
-      expect(title.toString).toBeDefined();
-      expect(title.toString()).toMatchSnapshot();
+      expect(headerTags.toString()).toMatchSnapshot();
     });
-
-    // TODO: Need to research
-    // it('opts out of string encoding', () => {
-    //   const context: IHelmetData = {};
-    //   /* eslint-disable react/no-unescaped-entities */
-    //   render(
-    //     <Helmet>
-    //       <Title>{"This is text and  & and '."}</Title>
-    //     </Helmet>,
-    //     context
-    //   );
-
-    //   expect(context.state).toBeDefined();
-    //   const {title} = context.state!;
-    //
-    //   expect(title).toBeDefined();
-    //   expect(title.toString).toBeDefined();
-    //   expect(title.toString()).toMatchSnapshot();
-    // });
 
     it('renders title as React component', () => {
       const context: IHelmetDataContext = {};
@@ -51,15 +31,14 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
 
-      expect(title).toBeDefined();
-      expect(title.toComponent).toBeDefined();
+      const titleComponents = headerTags.toComponent();
+      expect(titleComponents).toHaveLength(1);
+      const titleComponent = titleComponents[0];
 
-      const titleComponent = title.toComponent();
-      
-      expect(titleComponent).toEqual(expect.objectContaining({ type: 'title' }));
+      expect(titleComponent).toEqual(expect.objectContaining({type: 'title'}));
 
       const markup = renderToStaticMarkup(titleComponent);
 
@@ -75,14 +54,14 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
 
-      expect(title).toBeDefined();
-      expect(title.toComponent).toBeDefined();
+      const titleComponents = headerTags.toComponent();
+      expect(titleComponents).toHaveLength(1);
 
-      const titleComponent = title.toComponent();
-      expect(titleComponent).toEqual(expect.objectContaining({ type: 'title' }));
+      const titleComponent = titleComponents[0];
+      expect(titleComponent).toEqual(expect.objectContaining({type: 'title'}));
 
       const markup = renderToStaticMarkup(titleComponent);
 
@@ -98,12 +77,10 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
-
-      expect(title).toBeDefined();
-      expect(title.toString).toBeDefined();
-      expect(title.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      
+      expect(headerTags.toString()).toMatchSnapshot();
     });
 
     it('renders title and allows children containing expressions', () => {
@@ -117,12 +94,10 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
-
-      expect(title).toBeDefined();
-      expect(title.toString).toBeDefined();
-      expect(title.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      
+      expect(headerTags.toString()).toMatchSnapshot();
     });
 
     it('renders title with itemprop name as string', () => {
@@ -133,16 +108,11 @@ describe('server', () => {
         </Helmet>,
         context
       );
-      
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
 
-      expect(title).toBeDefined();
-      expect(title.toString).toBeDefined();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
 
-      const titleString = title.toString();
-
-      expect(titleString).toMatchSnapshot();
+      expect(headerTags.toString()).toMatchSnapshot();
     });
 
     it('does not encode all characters with HTML character entity equivalents', () => {
@@ -158,12 +128,10 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
 
-      expect(title).toBeDefined();
-      expect(title.toString).toBeDefined();
-      expect(title.toString()).toMatchSnapshot();
+      expect(headerTags.toString()).toMatchSnapshot();
     });
   });
 
@@ -177,12 +145,10 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
-
-      expect(title).toBeDefined();
-      expect(title.toString).toBeDefined();
-      expect(title.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      
+      expect(headerTags.toString()).toMatchSnapshot();
     });
 
     it('renders title as React component', () => {
@@ -194,14 +160,13 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {title} = context.state!;
-
-      expect(title).toBeDefined();
-      expect(title.toComponent).toBeDefined();
-
-      const titleComponent = title.toComponent();
-      expect(titleComponent).toEqual(expect.objectContaining({ type: 'title' }));
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      const titleComponents = headerTags.toComponent();
+      expect(titleComponents).toHaveLength(1);
+      const titleComponent = titleComponents[0];
+      
+      expect(titleComponent).toEqual(expect.objectContaining({type: 'title'}));
 
       const markup = renderToStaticMarkup(titleComponent);
 

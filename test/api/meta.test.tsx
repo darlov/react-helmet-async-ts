@@ -92,12 +92,14 @@ describe("meta tags", () => {
       expect(secondTag.name).toBe("description");
       expect(secondTag.content).toBe("Inner description");
       expect(secondTag.outerHTML).toMatchSnapshot();
-
+      
       expect(thirdTag).toBeInstanceOf(Element);
       expect(thirdTag.getAttribute).toBeDefined();
       expect(thirdTag.name).toBe("keywords");
       expect(thirdTag.content).toBe("test,meta,tags");
       expect(thirdTag.outerHTML).toMatchSnapshot();
+      
+
     });
 
     it("allows duplicate meta tags if specified in the same component", () => {

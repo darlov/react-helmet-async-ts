@@ -1,26 +1,23 @@
-import {FC, useEffect, useMemo} from "react";
-import {IHelmetState} from "../types";
-import {HtmlAttributesRender} from "./HtmlAttributesRender";
-import {createRoot} from "react-dom/client";
-import {TagsRender} from "./TagsRender";
+import {ITypedTagProps, TagName} from "../types";
+import {createElement, FC, memo, useMemo} from "react";
+import {createPortal} from "react-dom";
+import {HtmlTagInjector} from "./HtmlTagInjector";
 
-interface ITagRenderProps {
-  state?: IHelmetState;
-}
+type TagRenderProps = ITypedTagProps<TagName>["tagProps"] & {tagType: TagName}
 
-export const TagRender: FC<ITagRenderProps> = ({state}) => {
+export const TagRender: FC<TagRenderProps> = memo<TagRenderProps>((tag) => {
+  const placeHolder = useMemo(() => {
+    return document.createDocumentFragment();
+  }, []);
 
-
+  const { tagType, id, ...restObject } = tag;
   
-  if (state) {
-    return (
-      <>
-        <HtmlAttributesRender tag={state.bodyAttributes} attachTo={document}/>
-        <HtmlAttributesRender tag={state.htmlAttributes} attachTo={document}/>
-        <TagsRender tags={state.headerTags}/>
-      </>
-    );
-  }
+  const tagComponent = createElement(tagType, {...restObject, "data-rh": "true"});
 
-  return null;
-};
+  return <>
+    {createPortal(tagComponent, placeHolder)}
+    <HtmlTagInjector fragment={placeHolder} tag={tag}/>
+  </>
+});
+
+TagRender.displayName = "TagRender";

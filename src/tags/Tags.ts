@@ -28,12 +28,21 @@ const titleEmptyFallback = () : TitleProps => {
 };
 
 export const Title = createTagComponent(TagName.title, undefined, titleEmptyFallback);
+Title.displayName = "Title";
 export const Meta = createTagComponent(TagName.meta, isMetaValid);
+Meta.displayName = "Meta"
 export const Base = createTagComponent(TagName.base, isBaseValid);
+Base.displayName = "Base";
 export const Body = createTagComponent(TagName.body, isBodyValid);
+Body.displayName = "Body";
 export const Html = createTagComponent(TagName.html, isHtmlValid);
+Html.displayName = "Html"
 export const Link = createTagComponent(TagName.link, isLinkValid);
+Link.displayName = "Link";
 export const Noscript = createTagComponent(TagName.noscript, isNoscriptValid);
+Noscript.displayName = "Noscript";
 export const Script = createTagComponent(TagName.script, isScriptValid);
+Script.displayName = "Script";
 export const Style = createTagComponent(TagName.style, isStyleValid);
+Style.displayName = "Style";
 

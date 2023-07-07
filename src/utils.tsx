@@ -1,14 +1,16 @@
 import {createElement, Key, ReactElement} from "react";
 import {
-  ArrayElement,
-  DefaultTagPriorityConfig,
-  HelmetTags,
   IHelmetInstanceState,
   IHelmetServerState,
   IHelmetState,
+  ITagPriorityConfigMap,
+  ITagProps,
   ITypedTagProps,
+  LinkProps,
+  MetaProps,
   primaryLinkAttributes,
   primaryMetaAttributes,
+  TagConfigName,
   TagName,
   TagNames,
   TagPriorityConfig,
@@ -93,15 +95,17 @@ export namespace _ {
   >(
     items: T[],
     keySelector: (item: T, index: number) => K | undefined,
-    valueSelector?: TFunc
+    valueSelector: TFunc
   ): Map<K, TValSelReturn<T, TFunc>[]> => {
     return items.reduce((result, item, index) => {
       const key = keySelector(item, index);
       if (key !== undefined) {
-        if (!result.has(key)) {
-          result.set(key, []);
+        const collection = result.get(key);
+        if (collection !== undefined) {
+          collection.push(valueSelector(item, index))
+        } else {
+          result.set(key, [valueSelector(item, index)])
         }
-        result.get(key)!.push(valueSelector && valueSelector(item, index));
         return result;
       }
       return result;
@@ -117,227 +121,225 @@ export namespace _ {
   };
 }
 
-const findMetaPrimaryAttribute = (meta: ITypedTagProps<TagName.meta>) => {
-  const foundAttr = primaryMetaAttributes.find(attr => meta.tagProps[attr] !== undefined);
+const findMetaPrimaryAttribute = (metaProps: MetaProps) => {
+  const foundAttr = primaryMetaAttributes.find(attr => metaProps[attr] !== undefined);
 
   if (foundAttr !== undefined) {
-    return `${foundAttr}_${meta.tagProps[foundAttr]}`;
+    return `meta_${foundAttr}_${metaProps[foundAttr]}`;
   }
 
   return undefined;
 };
 
-const findLinkPrimaryAttribute = (link: ITypedTagProps<TagName.link>) => {
+const findLinkPrimaryAttribute = (linkProps: LinkProps) => {
   const foundAttr = primaryLinkAttributes.find(attr => {
-    return link.tagProps[attr] !== undefined ? !(attr === "rel" && link.tagProps[attr] === "stylesheet") : false;
+    return linkProps[attr] !== undefined ? !(attr === "rel" && linkProps[attr] === "stylesheet") : false;
   });
 
   if (foundAttr !== undefined) {
-    return `${foundAttr}_${link.tagProps[foundAttr]}`;
+    return `link_${foundAttr}_${linkProps[foundAttr]}`;
   }
 
   return undefined;
 };
 
-const mergeAllToOne = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
-  values: TElement[] | undefined,
-  isEmptyState: boolean,
-  result: TElement | undefined,
-  usePrevResult?: boolean,
-  emptyStateFallback?: (result: TElement | undefined) => TElement | undefined
-): TElement | undefined => {
-  if (isEmptyState) {
-    if (emptyStateFallback !== undefined) {
-      return emptyStateFallback(result);
-    }
+// const mergeAllToOne = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
+//   values: TElement[] | undefined,
+//   isEmptyState: boolean,
+//   result: TElement | undefined,
+//   usePrevResult?: boolean,
+//   emptyStateFallback?: (result: TElement | undefined) => TElement | undefined
+// ): TElement | undefined => {
+//   if (isEmptyState) {
+//     if (emptyStateFallback !== undefined) {
+//       return emptyStateFallback(result);
+//     }
+//
+//     return undefined;
+//   }
+//
+//   return (values || []).reduce((prev, current) => {
+//     return usePrevResult ? {...prev, ...current} : {...current};
+//   }, result);
+// };
 
-    return undefined;
-  }
+// const mergeAllToAll = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
+//   values: TElement[] | undefined,
+//   isEmptyState: boolean,
+//   result: TElement[]
+// ): TElement[] => {
+//   if (isEmptyState) {
+//     _.clear(result);
+//   }
+//
+//   if (values) {
+//     result.push(...values);
+//   }
+//
+//   return result;
+// };
 
-  return (values || []).reduce((prev, current) => {
-    return usePrevResult ? {...prev, ...current} : {...current};
-  }, result);
-};
+// const mergeAllByPrimaryAttribute = <T extends keyof HelmetTags, TElement = HelmetTags[T]>(
+//   values: TElement[] | undefined,
+//   isEmptyState: boolean,
+//   result: TElement[],
+//   primaryAttributeSelector: (tag: TElement) => string | undefined
+// ) => {
+//   if (isEmptyState) {
+//     _.clear(result);
+//   } else {
+//     if (values) {
+//       if (result.length === 0) {
+//         result.push(...values);
+//       } else {
+//         const instanceGrouped = _.groupBy(
+//           values,
+//           primaryAttributeSelector,
+//           (item, index) => [item, index] as [TElement, number]
+//         );
+//         const resultGrouped = _.groupBy(
+//           result,
+//           primaryAttributeSelector,
+//           (item, index) => [item, index] as [TElement, number]
+//         );
+//
+//         for (const [attr, instanceTags] of instanceGrouped.entries()) {
+//           const resultTags = resultGrouped.get(attr);
+//
+//           if (resultTags === undefined) {
+//             result.push(...instanceTags.map(([tags]) => tags));
+//           } else if (instanceTags.length !== resultTags.length) {
+//             result = result.filter(m => !resultTags.some(([tag]) => m === tag));
+//             result.push(...instanceTags.map(([tag]) => tag));
+//           } else {
+//             for (let i = 0; i < instanceTags.length; i++) {
+//               const [instanceTag] = instanceTags[i];
+//               const [resultTag, resultIndex] = resultTags[i];
+//
+//               result[resultIndex] = {...resultTag, ...instanceTag};
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+//
+//   return result;
+// };
 
-const mergeAllToAll = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
-  values: TElement[] | undefined,
-  isEmptyState: boolean,
-  result: TElement[]
-): TElement[] => {
-  if (isEmptyState) {
-    _.clear(result);
-  }
+export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagConfigName, ITagPriorityConfigMap[]>): IHelmetState => {
+  const state: IHelmetState = {
+    tags: [],
+    isEmptyState: true
+  };
 
-  if (values) {
-    result.push(...values);
-  }
+  // const titleEmptyStateFallback = (result?: ITypedTagProps<TagName.title>): ITypedTagProps<TagName.title> | undefined => {
+  //   return result !== undefined ? {tagType: TagName.title, tagProps: {children: result?.tagProps.children}} : undefined
+  // };
 
-  return result;
-};
+  const uniqueItems = new Map<string, ITypedTagProps<TagName>>();
+  let otherItems: ITypedTagProps<TagName>[] = [];
 
-const mergeAllByPrimaryAttribute = <T extends keyof HelmetTags, TElement = HelmetTags[T]>(
-  values: TElement[] | undefined,
-  isEmptyState: boolean,
-  result: TElement[],
-  primaryAttributeSelector: (tag: TElement) => string | undefined
-) => {
-  if (isEmptyState) {
-    _.clear(result);
-  } else {
-    if (values) {
-      if (result.length === 0) {
-        result.push(...values);
-      } else {
-        const instanceGrouped = _.groupBy(
-          values,
-          primaryAttributeSelector,
-          (item, index) => [item, index] as [TElement, number]
-        );
-        const resultGrouped = _.groupBy(
-          result,
-          primaryAttributeSelector,
-          (item, index) => [item, index] as [TElement, number]
-        );
+  for (const instance of instances) {
+    const isEmptyInstance = _.isEmptyArray(instance.tags);
 
-        for (const [attr, instanceTags] of instanceGrouped.entries()) {
-          const resultTags = resultGrouped.get(attr);
-
-          if (resultTags === undefined) {
-            result.push(...instanceTags.map(([tags]) => tags));
-          } else if (instanceTags.length !== resultTags.length) {
-            result = result.filter(m => !resultTags.some(([tag]) => m === tag));
-            result.push(...instanceTags.map(([tag]) => tag));
-          } else {
-            for (let i = 0; i < instanceTags.length; i++) {
-              const [instanceTag] = instanceTags[i];
-              const [resultTag, resultIndex] = resultTags[i];
-
-              result[resultIndex] = {...resultTag, ...instanceTag};
+    if (instance.tags) {
+      for (const tag of instance.tags) {
+        switch (tag.tagType) {
+          case TagName.title:
+          case TagName.base:
+          case TagName.body:
+          case TagName.html:
+            uniqueItems.set(tag.tagType, {...uniqueItems.get(tag.tagType), ...tag})
+            break;
+          case TagName.style:
+          case TagName.script:
+          case TagName.noscript:
+            otherItems.push(tag);
+            break;
+          case TagName.link: {
+            const primaryAttrKey = findLinkPrimaryAttribute(tag.tagProps as LinkProps);
+            if (primaryAttrKey !== undefined) {
+              uniqueItems.set(primaryAttrKey, {...uniqueItems.get(primaryAttrKey), ...tag})
             }
+            break;
+          }
+          case TagName.meta: {
+            const primaryAttrKey = findMetaPrimaryAttribute(tag.tagProps as MetaProps);
+            if (primaryAttrKey !== undefined) {
+              uniqueItems.set(primaryAttrKey, {...uniqueItems.get(primaryAttrKey), ...tag})
+            }
+            break;
           }
         }
+      }
+    } else {
+      otherItems = [];
+      const existTitle = uniqueItems.get(TagName.title);
+      uniqueItems.clear();
+      
+      if(existTitle !== undefined){
+        uniqueItems.set(TagName.title, existTitle);
       }
     }
   }
 
-  return result;
-};
-
-export const buildState = (instances: IHelmetInstanceState[], priority: TagPriorityConfig[] | undefined): IHelmetState => {
-  const state: IHelmetState = {
-    titleTag: undefined,
-    baseTag: undefined,
-    bodyAttributes: undefined,
-    htmlAttributes: undefined,
-    metaTags: [],
-    styleTags: [],
-    scriptTags: [],
-    linkTags: [],
-    noscriptTags: [],
-    headerTags: []
-  };
-
-  const titleEmptyStateFallback = (result?: ITypedTagProps<TagName.title>): ITypedTagProps<TagName.title> | undefined => {
-    return result !== undefined ? {tagType: TagName.title, tagProps: {children: result.tagProps.children}} : undefined
-  };
-
-  for (const instance of instances) {
-    const isEmptyState = _.isEmptyArray(instance.title, instance.link, instance.base, instance.body,
-      instance.html, instance.style, instance.script, instance.noscript, instance.meta, instance.link);
-
-    state.titleTag = mergeAllToOne(instance.title, isEmptyState, state.titleTag, true, titleEmptyStateFallback);
-    state.baseTag = mergeAllToOne(instance.base, isEmptyState, state.baseTag);
-    state.bodyAttributes = mergeAllToOne(instance.body, isEmptyState, state.bodyAttributes);
-    state.htmlAttributes = mergeAllToOne(instance.html, isEmptyState, state.htmlAttributes);
-    state.styleTags = mergeAllToAll(instance.style, isEmptyState, state.styleTags);
-    state.scriptTags = mergeAllToAll(instance.script, isEmptyState, state.scriptTags);
-    state.noscriptTags = mergeAllToAll(instance.noscript, isEmptyState, state.noscriptTags);
-    state.metaTags = mergeAllByPrimaryAttribute(
-      instance.meta,
-      isEmptyState,
-      state.metaTags,
-      findMetaPrimaryAttribute
-    );
-    state.linkTags = mergeAllByPrimaryAttribute(
-      instance.link,
-      isEmptyState,
-      state.linkTags,
-      findLinkPrimaryAttribute
-    );
-  }
-
-  const priorityConfig = priority ?? DefaultTagPriorityConfig;
-
-  state.headerTags = buildHeaderTags(state, priorityConfig);
-
+  const sourceTags = [...uniqueItems.values(), ...otherItems];
+  state.tags = buildHeaderTags(sourceTags, priority);
 
   return state;
 };
 
-const addTitle = (state: IHelmetState, priorities: TypedTagProps[]) => {
-  if (state.titleTag) {
-    priorities.push(state.titleTag);
-    state.titleTag = undefined;
-  }
-}
+// const addTitle = (state: IHelmetState, priorities: TypedTagProps[]) => {
+//   if (state.titleTag) {
+//     priorities.push(state.titleTag);
+//     state.titleTag = undefined;
+//   }
+// }
 
-const addBase = (state: IHelmetState, priorities: TypedTagProps[]) => {
-  if (state.baseTag) {
-    priorities.push(state.baseTag)
-    state.baseTag = undefined;
-  }
-}
+// const addBase = (state: IHelmetState, priorities: TypedTagProps[]) => {
+//   if (state.baseTag) {
+//     priorities.push(state.baseTag)
+//     state.baseTag = undefined;
+//   }
+// }
 
 
-const buildHeaderTags = (state: IHelmetState, priorityConfig: TagPriorityConfig[]): TypedTagProps[] => {
-  let headerTags: TypedTagProps[] = []
-  for (const config of priorityConfig) {
-    switch (config.tagName) {
-      case TagName.title:
-        addTitle(state, headerTags);
-        break
-      case TagName.base:
-        addBase(state, headerTags);
-        break
-      case TagName.meta:
-        headerTags.push(...getMatchedTags(state.metaTags, config))
-        break
-      case TagName.style:
-        headerTags.push(...getMatchedTags(state.styleTags, config))
-        break
-      case TagName.link:
-        headerTags.push(...getMatchedTags(state.linkTags, config))
-        break
-      case TagName.script:
-        headerTags.push(...getMatchedTags(state.scriptTags, config))
-        break
-      case TagName.noscript:
-        headerTags.push(...getMatchedTags(state.noscriptTags, config))
-        break
+const buildHeaderTags = (sourceTags: ITypedTagProps<TagName>[], priorityConfig: Map<TagConfigName, ITagPriorityConfigMap[]>): ITypedTagProps<TagName>[] => {
+  let headerTags: ITypedTagProps<TagName>[] = [];
+
+  const outOfConfigStartIndex = Number.MAX_VALUE - sourceTags.length;
+  const priorityTags: {priority: number, tag: ITypedTagProps<TagName>}[] = [];
+  
+  for (let i = 0; i < sourceTags.length; i++){
+    const sourceTag = sourceTags[i];
+    const configItems = priorityConfig.get(sourceTag.tagType as TagConfigName);
+    
+    if(configItems === undefined){
+      priorityTags.push({priority: outOfConfigStartIndex + i, tag: sourceTag})
+    } else {
+      let foundConfig = false;
+      for (const configItem of configItems) {
+        if(isTagMatch(sourceTag, configItem.config)){
+          priorityTags.push({priority: configItem.priority, tag: sourceTag});
+          foundConfig = true;
+          break;
+        }
+      }
+
+      if(!foundConfig){
+        priorityTags.push({priority: outOfConfigStartIndex + i, tag: sourceTag})
+      }
     }
   }
-  
-  if(state.titleTag){
-    addTitle(state, headerTags);
-  }
 
-  if (state.baseTag) {
-    addBase(state, headerTags);
-  }
-
-  headerTags.push(..._.clear(state.metaTags));
-  headerTags.push(..._.clear(state.styleTags));
-  headerTags.push(..._.clear(state.linkTags));
-  headerTags.push(..._.clear(state.scriptTags));
-  headerTags.push(..._.clear(state.noscriptTags));
-
-  return headerTags
+  return _.sortBy(priorityTags, "priority").map(m => m.tag);
 }
 
 const getMatchedTags = <T extends TagName, >(tags: ITypedTagProps<T>[], config: TagPriorityConfig) => {
   const priorities: TypedTagProps[] = [];
-  for (const tag of tags) {
-    if (isTagMatch(tag, config)) {
+  for (const tag of [...tags]) {
+    if (isTagMatch(tag.tagProps, config)) {
       priorities.push(..._.remove(tags, tag));
     }
   }
@@ -361,8 +363,8 @@ const isTagMatch = <T, >(tag: T, config: TagPriorityConfig) => {
     }
 
     if (configValue["seoValues"]) {
-      if (!configValue["seoValues"].find((m: any) => m === tagValue)) {
-        return false;
+      if (configValue["seoValues"].find((m: any) => m === tagValue)) {
+        return true;
       }
     }
 
@@ -380,29 +382,29 @@ const createReactComponent = <T extends TagName, >(tag: ITypedTagProps<T> | unde
 
 const createReactComponents = <T extends TagName, >(tags: ITypedTagProps<T>[]): JSX.Element[] => tags.map((m, i) => createComponent(m, i));
 
-const fallBackTitle: ITypedTagProps<TagName.title> = {tagType: TagName.title, tagProps: {}}
 export const buildServerState = (state: IHelmetState): IHelmetServerState => {
-  const titleComponentCallback = () => createReactComponent(state.titleTag, fallBackTitle);
-  const baseComponentCallback = () => createReactComponent(state.baseTag);
-  const bodyComponentCallback = () => createReactComponent(state.bodyAttributes);
-  const htmlComponentCallback = () => createReactComponent(state.htmlAttributes);
-  const metaComponentsCallback = () => createReactComponents(state.metaTags);
-  const styleComponentsCallback = () => createReactComponents(state.styleTags);
-  const scriptComponentsCallback = () => createReactComponents(state.scriptTags);
-  const linkComponentsCallback = () => createReactComponents(state.linkTags);
-  const noscriptComponentsCallback = () => createReactComponents(state.noscriptTags);
 
-  const priorityComponentsCallback = () => createReactComponents(state.headerTags);
+  let bodyAttributes: ITypedTagProps<TagName> | undefined;
+  let htmlAttributes: ITypedTagProps<TagName> | undefined;
+  
+  const tags = state.tags.flatMap((val, i) => { 
+    switch (val.tagType) {
+      case TagName.body:
+        bodyAttributes = val;
+        return [];
+      case TagName.html:
+        htmlAttributes = val;
+        return [];
+      default:
+        return val;
+    }
+  });
+
+  const bodyComponentCallback = () => createReactComponent(bodyAttributes);
+  const htmlComponentCallback = () => createReactComponent(htmlAttributes);
+  const headerTagsComponentsCallback = () => createReactComponents(tags);
 
   return {
-    title: {
-      toComponent: titleComponentCallback,
-      toString: () => renderToStaticMarkup(titleComponentCallback())
-    },
-    base: {
-      toComponent: baseComponentCallback,
-      toString: () => renderToStaticMarkup(baseComponentCallback())
-    },
     bodyAttributes: {
       toComponent: () => bodyComponentCallback().props ?? {},
       toString: () => renderToStaticMarkup(bodyComponentCallback()).replace("<body ", "").replace("></body>", "")
@@ -411,29 +413,9 @@ export const buildServerState = (state: IHelmetState): IHelmetServerState => {
       toComponent: () => htmlComponentCallback().props ?? {},
       toString: () => renderToStaticMarkup(htmlComponentCallback()).replace("<html ", "").replace("></html>", "")
     },
-    meta: {
-      toComponent: metaComponentsCallback,
-      toString: () => renderToStaticMarkup(<>{metaComponentsCallback()}</>)
-    },
-    style: {
-      toComponent: styleComponentsCallback,
-      toString: () => renderToStaticMarkup(<>{styleComponentsCallback()}</>)
-    },
-    script: {
-      toComponent: scriptComponentsCallback,
-      toString: () => renderToStaticMarkup(<>{scriptComponentsCallback()}</>)
-    },
-    link: {
-      toComponent: linkComponentsCallback,
-      toString: () => renderToStaticMarkup(<>{linkComponentsCallback()}</>)
-    },
-    noscript: {
-      toComponent: noscriptComponentsCallback,
-      toString: () => renderToStaticMarkup(<>{noscriptComponentsCallback()}</>)
-    },
-    priority: {
-      toComponent: priorityComponentsCallback,
-      toString: () => renderToStaticMarkup(<>{priorityComponentsCallback()}</>)
+    headerTags: {
+      toComponent: headerTagsComponentsCallback,
+      toString: () => renderToStaticMarkup(<>{headerTagsComponentsCallback()}</>)
     }
   }
 }
@@ -467,6 +449,7 @@ export const getHtmlAttributesFromHtmlElement = <T extends Element>(htmlElement:
     return result;
   }, [] as { name: string, value: string }[])
 }
+
 
 
 

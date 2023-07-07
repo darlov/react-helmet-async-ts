@@ -4,6 +4,8 @@ exports[`server > Declarative API > does not encode all characters with HTML cha
 
 exports[`server > Declarative API > encodes special characters in title 1`] = `"<title data-rh="true">Dangerous &lt;script&gt; include</title>"`;
 
+exports[`server > Declarative API > opts out of string encoding 1`] = `"<title data-rh="true">This is text and  &amp; and &#x27;.</title>"`;
+
 exports[`server > Declarative API > renders title and allows children containing expressions 1`] = `"<title data-rh="true">Title: Some Great Title</title>"`;
 
 exports[`server > Declarative API > renders title as React component 1`] = `"<title data-rh="true">Dangerous &lt;script&gt; include</title>"`;

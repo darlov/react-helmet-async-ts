@@ -6,21 +6,26 @@ import typescript from '@rollup/plugin-typescript';
 // noinspection JSUnusedGlobalSymbols
 export default defineConfig((opt) => {  
   return {
-    plugins: [react() as any, typescript({tsconfig: opt.mode === "test"? "./test/tsconfig.json" : "./tsconfig.json" })],
+    plugins: [react(), typescript({tsconfig: opt.mode === "test"? "./test/tsconfig.json" : "./tsconfig.json" })],
     test: {
       environmentMatchGlobs: [
         ['test/api/**\/*.{test,spec}.{ts,tsx}', 'jsdom'],
-        ['test/server/**\/*.{test,spec}.{ts,tsx}', 'node']
+        ['test/server/**\/*.{test,spec}.{ts,tsx}', 'node'],
+        ['test/benchmark/**\/*.bench.tsx', 'jsdom'],
       ],
       globals: true,
-      setupFiles: "./vitest.setup.ts",
+      setupFiles: "./test/vitest.setup.ts",
       logHeapUsage: true,
+      unstubGlobals: true,
+      clearMocks: true,
       snapshotFormat: {
         printBasicPrototype: true,
         escapeString: false,
         printFunctionName: true,
-      }
+      },
+  
     },
+    
     build: {
       minify: true,
       lib: {

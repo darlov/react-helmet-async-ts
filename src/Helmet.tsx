@@ -1,4 +1,4 @@
-import {FC, ReactNode, useId, useMemo} from "react";
+import {FC, memo, ReactNode, useId, useMemo} from "react";
 import {IHelmetInstanceState} from "./types";
 import {useHelmetContext} from "./HelmetProvider";
 import {Title} from "./tags";
@@ -11,20 +11,12 @@ interface IHelmetProps {
   prioritizeSeoTags?: boolean
 }
 
-export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
+let counter = 0;
+export const Helmet = memo<IHelmetProps>(({children, defaultTitle}) => {
   const rootContext = useHelmetContext();
-  const sourceId = useId();
-  const id = useMemo(() => {
-    const match = sourceId.match(/[rR]([a-z0-9]+):/);
-    if (match === null) {
-      throw new Error(`Couldn't parse id from useId() hook for Helmet instance state. Error value: ${sourceId}`)
-    }
-    return parseInt(match[1], 32);
-  }, [sourceId])
-
   const instanceState = useMemo<IHelmetInstanceState>(() => {
-    return {id}
-  }, [id])
+    return {id: counter++}
+  }, [])
 
   useServerSideEffect(() => {
       rootContext.addInstance(instanceState);
@@ -44,6 +36,6 @@ export const Helmet: FC<IHelmetProps> = ({children, defaultTitle}) => {
       {defaultTitle && <Title>{defaultTitle}</Title>}
       {children}
     </HelmetScopedContext.Provider>);
-}
+});
 
 Helmet.displayName = "Helmet";

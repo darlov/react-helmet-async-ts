@@ -32,7 +32,7 @@ describe("body attributes", () => {
       { name: "id", value: "test" },
       { name: "lang", value: "fr" },
       { name: "spellCheck", value: true, expectedValue: "true" },
-      { name: "style", value: { color: "green" }, expectedValue: "color:green" },
+      { name: "style", value: { color: "green" }, expectedValue: "color: green;" },
       { name: "tabIndex", value: -1, expectedValue: "-1" },
       { name: "title", value: "test" },
       { name: "translate", value: "no" },
@@ -112,7 +112,7 @@ describe("body attributes", () => {
 
     const bodyTag = document.body;
 
-    expect(bodyTag.getAttribute("style")).toBe("background:black");
+    expect(bodyTag.getAttribute("style")).toBe("background: black;");
     expect(bodyTag.getAttribute(HELMET_ATTRIBUTE)).toBe("true");
   });
 

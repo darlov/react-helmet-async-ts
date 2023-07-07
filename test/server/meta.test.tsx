@@ -1,5 +1,5 @@
 import {Helmet, IHelmetDataContext, Meta} from '../../src';
-import { render } from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
@@ -20,21 +20,16 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {meta} = context.state!;
-
-      expect(meta).toBeDefined();
-      expect(meta.toComponent).toBeDefined();
-
-      const metaComponent = meta.toComponent();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const metaComponents = context.state!.headerTags.toComponent();
       
-      expect(metaComponent).toHaveLength(5);
+      expect(metaComponents).toHaveLength(5);
 
-      metaComponent.forEach(meta => {
+      metaComponents.forEach(meta => {
         expect(meta).toEqual(expect.objectContaining({ type: 'meta' }));
       });
 
-      const markup = renderToStaticMarkup(<>{metaComponent}</>);
+      const markup = renderToStaticMarkup(<>{metaComponents}</>);
 
       expect(markup).toMatchSnapshot();
     });
@@ -55,12 +50,9 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {meta} = context.state!;
-
-      expect(meta).toBeDefined();
-      expect(meta.toString).toBeDefined();
-      expect(meta.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      expect(headerTags.toString()).toMatchSnapshot();
     });
   });
 });

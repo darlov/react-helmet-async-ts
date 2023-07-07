@@ -1,5 +1,5 @@
 import {Helmet, IHelmetDataContext, Link} from '../../src';
-import {render} from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
 
 describe('server', () => {
@@ -14,21 +14,16 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {link} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const linkComponents = context.state!.headerTags.toComponent();
 
-      expect(link).toBeDefined();
-      expect(link.toComponent).toBeDefined();
+      expect(linkComponents).toHaveLength(2);
 
-      const linkComponent = link.toComponent();
-
-      expect(linkComponent).toHaveLength(2);
-
-      linkComponent.forEach(link => {
+      linkComponents.forEach(link => {
         expect(link).toEqual(expect.objectContaining({type: 'link'}));
       });
 
-      const markup = renderToStaticMarkup(<>{linkComponent}</>);
+      const markup = renderToStaticMarkup(<>{linkComponents}</>);
 
       expect(markup).toMatchSnapshot();
     });
@@ -43,11 +38,9 @@ describe('server', () => {
         context
       );
 
-      const {link} = context.state!;
-
-      expect(link).toBeDefined();
-      expect(link.toString).toBeDefined();
-      expect(link.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      expect(headerTags.toString()).toMatchSnapshot();
     });
   });
 });

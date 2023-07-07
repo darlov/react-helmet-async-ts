@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`title > API > does not encode all characters with HTML character 1`] = `"“New Post”"`;
+exports[`title > API > does not encode all characters with HTML character 1`] = `"“New Post” & and"`;
 
 exports[`title > API > does not encode all characters with HTML character entity equivalents 1`] = `"膣膗 鍆錌雔"`;
 

@@ -1,7 +1,6 @@
 import {Helmet, IHelmetDataContext, Style} from '../../src';
-import { render } from './utils';
+import {render, stateAndHeaderTagsShouldBeDefined} from './utils';
 import {renderToStaticMarkup} from "react-dom/server";
-
 
 describe('server', () => {
   describe('Declarative API', () => {
@@ -15,17 +14,11 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {style} = context.state!;
+      stateAndHeaderTagsShouldBeDefined(context);
+      const styleComponents = context.state!.headerTags.toComponent();
+      expect(styleComponents).toHaveLength(2);
 
-      expect(style).toBeDefined();
-      expect(style.toComponent).toBeDefined();
-
-      const styleComponent = style.toComponent();
-
-      expect(styleComponent).toHaveLength(2);
-
-      const markup = renderToStaticMarkup(<>{styleComponent}</>);
+      const markup = renderToStaticMarkup(<>{styleComponents}</>);
 
       expect(markup).toMatchSnapshot();
     });
@@ -40,12 +33,9 @@ describe('server', () => {
         context
       );
 
-      expect(context.state).toBeDefined();
-      const {style} = context.state!;
-
-      expect(style).toBeDefined();
-      expect(style.toString).toBeDefined();
-      expect(style.toString()).toMatchSnapshot();
+      stateAndHeaderTagsShouldBeDefined(context);
+      const {headerTags} = context.state!;
+      expect(headerTags.toString()).toMatchSnapshot();
     });
   });
 });
