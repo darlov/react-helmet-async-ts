@@ -1,5 +1,5 @@
 import {FC, useEffect} from "react";
-import {ITypedTagProps, TagName, TagProps} from "../types";
+import {ITypedTagProps, TagName} from "../types";
 
 interface IHtmlTagInjectorProps {
   fragment: DocumentFragment,
@@ -25,8 +25,14 @@ const applyAttributes = (from: HTMLElement, to: HTMLElement, applyContent?: bool
     data.appliedAttrNames[i] = attr.name;
   }
 
-  if (applyContent && from.innerHTML !== "") {
-    to.innerHTML = from.innerHTML;
+  if (applyContent && from.childNodes.length > 0) {
+    while (to.firstChild) {
+      to.removeChild(to.firstChild);
+    }
+
+    while(from.firstChild){
+      to.appendChild(from.firstChild);
+    }    
   }
 
   return data;

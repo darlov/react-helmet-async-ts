@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import './App.css'
-import {Helmet, HelmetContextProvider, Html, Link, Title} from "../../../src";
+import {Body, Helmet, HelmetContextProvider, Html, Link, Title} from "../../../src";
 
 function App() {
   const [count, setCount] = useState(0)
@@ -36,6 +36,7 @@ function App() {
           {/*<Title>Hello World {count}</Title>*/}
           <Link rel="canonical" href="https://www.tacobell.com/"/>
           <Html className={"class " + count} lang="en" />
+          <Body className={"class " + count}  color={"#ff"} />
         </Helmet>}
       </HelmetContextProvider>
     </>
