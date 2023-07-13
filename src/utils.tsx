@@ -237,11 +237,13 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
   //   return result !== undefined ? {tagType: TagName.title, tagProps: {children: result?.tagProps.children}} : undefined
   // };
 
-  const uniqueItems = new Map<string, ITypedTagProps<TagName>>();
+  const uniqueItems = new Map<string, ITypedTagProps<TagName>[]>();
   let otherItems: ITypedTagProps<TagName>[] = [];
 
   for (const instance of instances) {
     const isEmptyInstance = _.isEmptyArray(instance.tags);
+
+    const instanceDuplicateItems = new Map<string, ITypedTagProps<TagName>[]>();
 
     if (instance.tags) {
       for (const tag of instance.tags) {
@@ -250,7 +252,8 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
           case TagName.base:
           case TagName.body:
           case TagName.html:
-            uniqueItems.set(tag.tagType, {...uniqueItems.get(tag.tagType), ...tag})
+            const existItems = uniqueItems.get(tag.tagType) ?? [];
+            uniqueItems.set(tag.tagType, [{...existItems[0], ...tag}])
             break;
           case TagName.style:
           case TagName.script:
@@ -260,14 +263,24 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
           case TagName.link: {
             const primaryAttrKey = findLinkPrimaryAttribute(tag.tagProps as LinkProps);
             if (primaryAttrKey !== undefined) {
-              uniqueItems.set(primaryAttrKey, {...uniqueItems.get(primaryAttrKey), ...tag})
+              const values = instanceDuplicateItems.get(primaryAttrKey);
+              if (values !== undefined) {
+                values.push(tag)
+              } else {
+                instanceDuplicateItems.set(primaryAttrKey, [tag])
+              }
             }
             break;
           }
           case TagName.meta: {
             const primaryAttrKey = findMetaPrimaryAttribute(tag.tagProps as MetaProps);
             if (primaryAttrKey !== undefined) {
-              uniqueItems.set(primaryAttrKey, {...uniqueItems.get(primaryAttrKey), ...tag})
+              const values = instanceDuplicateItems.get(primaryAttrKey);
+              if (values !== undefined) {
+                values.push(tag)
+              } else {
+                instanceDuplicateItems.set(primaryAttrKey, [tag])
+              }
             }
             break;
           }
@@ -275,16 +288,25 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
       }
     } else {
       otherItems = [];
-      const existTitle = uniqueItems.get(TagName.title);
+      const existTitles = uniqueItems.get(TagName.title);
       uniqueItems.clear();
-      
-      if(existTitle !== undefined){
-        uniqueItems.set(TagName.title, existTitle);
+
+      if (existTitles !== undefined && existTitles.length > 0) {
+        const existTitle = existTitles[0];
+        uniqueItems.set(TagName.title, [{
+          id: existTitle.id,
+          tagType: existTitle.tagType,
+          tagProps: {children: existTitle.tagProps.children}
+        }]);
       }
+    }
+
+    for (const [key, values] of instanceDuplicateItems) {
+      uniqueItems.set(key, values);
     }
   }
 
-  const sourceTags = [...uniqueItems.values(), ...otherItems];
+  const sourceTags = [...[...uniqueItems.values()].flatMap(m => m), ...otherItems];
   state.tags = buildHeaderTags(sourceTags, priority);
 
   return state;
@@ -309,25 +331,25 @@ const buildHeaderTags = (sourceTags: ITypedTagProps<TagName>[], priorityConfig: 
   let headerTags: ITypedTagProps<TagName>[] = [];
 
   const outOfConfigStartIndex = Number.MAX_VALUE - sourceTags.length;
-  const priorityTags: {priority: number, tag: ITypedTagProps<TagName>}[] = [];
-  
-  for (let i = 0; i < sourceTags.length; i++){
+  const priorityTags: { priority: number, tag: ITypedTagProps<TagName> }[] = [];
+
+  for (let i = 0; i < sourceTags.length; i++) {
     const sourceTag = sourceTags[i];
     const configItems = priorityConfig.get(sourceTag.tagType as TagConfigName);
-    
-    if(configItems === undefined){
+
+    if (configItems === undefined) {
       priorityTags.push({priority: outOfConfigStartIndex + i, tag: sourceTag})
     } else {
       let foundConfig = false;
       for (const configItem of configItems) {
-        if(isTagMatch(sourceTag, configItem.config)){
+        if (isTagMatch(sourceTag, configItem.config)) {
           priorityTags.push({priority: configItem.priority, tag: sourceTag});
           foundConfig = true;
           break;
         }
       }
 
-      if(!foundConfig){
+      if (!foundConfig) {
         priorityTags.push({priority: outOfConfigStartIndex + i, tag: sourceTag})
       }
     }
@@ -336,24 +358,13 @@ const buildHeaderTags = (sourceTags: ITypedTagProps<TagName>[], priorityConfig: 
   return _.sortBy(priorityTags, "priority").map(m => m.tag);
 }
 
-const getMatchedTags = <T extends TagName, >(tags: ITypedTagProps<T>[], config: TagPriorityConfig) => {
-  const priorities: TypedTagProps[] = [];
-  for (const tag of [...tags]) {
-    if (isTagMatch(tag.tagProps, config)) {
-      priorities.push(..._.remove(tags, tag));
-    }
-  }
-
-  return priorities
-}
-
-const isTagMatch = <T, >(tag: T, config: TagPriorityConfig) => {
+const isTagMatch = (tag: ITypedTagProps<TagName>, config: TagPriorityConfig) => {
   for (const [key, configValue] of Object.entries(config)) {
     if (key == "tagName") {
       continue;
     }
 
-    const tagValue = tag[key as keyof T];
+    const tagValue = tag.tagProps[key as keyof ITypedTagProps<TagName>["tagProps"]];
     if (tagValue === undefined) {
       return false;
     }
@@ -386,8 +397,8 @@ export const buildServerState = (state: IHelmetState): IHelmetServerState => {
 
   let bodyAttributes: ITypedTagProps<TagName> | undefined;
   let htmlAttributes: ITypedTagProps<TagName> | undefined;
-  
-  const tags = state.tags.flatMap((val, i) => { 
+
+  const tags = state.tags.flatMap((val, i) => {
     switch (val.tagType) {
       case TagName.body:
         bodyAttributes = val;

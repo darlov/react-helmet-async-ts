@@ -48,12 +48,12 @@ export class HelmetData {
 
   addInstance = (instance: IHelmetInstanceState) => {
     this._instances.set(instance.id, instance);
-    this._stateUpdated = true;
+    this.triggerUpdates();
   }
 
   removeInstance = (instance: IHelmetInstanceState) => {
     this._instances.delete(instance.id);
-    this._stateUpdated = true;
+    this.triggerUpdates();
   }
 
   addItem: ModifyInstanceCallback = (instance, value) => {
@@ -63,17 +63,24 @@ export class HelmetData {
       instance.tags.push(value);
     }
 
-    this._stateUpdated = true;
+    this.triggerUpdates();
   }
 
   removeItem: ModifyInstanceCallback = (instance, value) => {
-    if(instance.tags !== undefined){
+    if (instance.tags !== undefined) {
       const foundIndex = instance.tags.indexOf(value);
-      if(foundIndex >= 0) {
+      if (foundIndex >= 0) {
         instance.tags.splice(foundIndex, 1);
       }
     }
+    this.triggerUpdates();
+  }
+
+  private triggerUpdates = () => {
     this._stateUpdated = true;
+    if(!this._canUseDOM){
+      this.buildState();
+    }
   }
 
   private buildState = () => {

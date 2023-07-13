@@ -64,7 +64,7 @@ export const HelmetContextProvider: FC<IHelmetContextProviderProps> = ({value, c
       <HelmetContext.Provider value={context}>
         {children}
       </HelmetContext.Provider>
-      {data.canUseDOM && <TagsRender state={data.helmetState}/>}
+      <TagsRender canUseDOM={data.canUseDOM} state={data.helmetState}/>
     </>
   );
 };

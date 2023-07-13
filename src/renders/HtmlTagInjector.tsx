@@ -1,40 +1,33 @@
-import {FC, useEffect} from "react";
+import {FC, useEffect, useMemo} from "react";
 import {ITypedTagProps, TagName} from "../types";
 
 interface IHtmlTagInjectorProps {
   fragment: DocumentFragment,
-  tag: ITypedTagProps<TagName>["tagProps"] & {tagType: TagName}
+  tag: ITypedTagProps<TagName>["tagProps"] & { tagType: TagName }
 }
 
 interface IAttrModifyElement {
   from: HTMLElement,
   to: HTMLElement,
-  appliedAttrNames: string[]
+  appliedAttrNames: string[],
+  applyContent?: boolean
 }
 
-const applyAttributes = (from: HTMLElement, to: HTMLElement, applyContent?: boolean) => {
-  const data: IAttrModifyElement = {
-    from: from,
-    to: to,
-    appliedAttrNames: new Array<string>(from.attributes.length)
+const applyAttributes = (data: IAttrModifyElement) => {
+  for (let i = 0; i < data.from.attributes.length; i++) {
+    const attr = data.from.attributes[i];
+    data.to.setAttribute(attr.name, attr.value);
   }
 
-  for (let i = 0; i < from.attributes.length; i++) {
-    const attr = from.attributes[i];
-    to.setAttribute(attr.name, attr.value);
-    data.appliedAttrNames[i] = attr.name;
-  }
-
-  if (applyContent && from.childNodes.length > 0) {
-    while (to.firstChild) {
-      to.removeChild(to.firstChild);
+  if (data.applyContent && data.from.childNodes.length > 0) {
+    while (data.to.firstChild) {
+      data.to.removeChild(data.to.firstChild);
     }
 
-    while(from.firstChild){
-      to.appendChild(from.firstChild);
-    }    
+    while (data.from.firstChild) {
+      data.to.appendChild(data.from.firstChild);
+    }
   }
-
   return data;
 }
 
@@ -44,47 +37,75 @@ const addHeadElement = (element: HTMLElement) => {
 }
 
 export const HtmlTagInjector: FC<IHtmlTagInjectorProps> = ({fragment, tag}) => {
-  useEffect(() => {
-    const node = fragment.childNodes[0].cloneNode(true);
+  const data = useMemo(() => {
     let headElement: HTMLElement | undefined;
     let attributeData: IAttrModifyElement | undefined;
 
-    const htmlElement = node as HTMLElement
-    switch (tag.tagType) {
-      case TagName.title: {
-        const existTitle = document.head.querySelector("title");
-        if (existTitle !== null) {
-          attributeData = applyAttributes(htmlElement, existTitle, true);
-        } else {
-          headElement = addHeadElement(htmlElement);
+    const node = fragment.childNodes[0];
+    if(node !== undefined) {
+      const htmlElement = node as HTMLElement
+      switch (tag.tagType) {
+        case TagName.title: {
+          const existTitle = document.head.querySelector("title");
+          if (existTitle !== null) {
+            attributeData = {
+              from: htmlElement,
+              to: existTitle,
+              appliedAttrNames: htmlElement.getAttributeNames(),
+              applyContent: true
+            };
+          } else {
+            headElement = htmlElement;
+          }
+          break;
         }
-        break;
+        case TagName.body: {
+          attributeData = {
+            from: htmlElement,
+            to: document.body,
+            appliedAttrNames: htmlElement.getAttributeNames()
+          };
+          break;
+        }
+        case TagName.html: {
+          const html = document.querySelector("html")!;
+          attributeData = {
+            from: htmlElement,
+            to: html,
+            appliedAttrNames: htmlElement.getAttributeNames()
+          };
+          break;
+        }
+        default: {
+          headElement = htmlElement;
+          break;
+        }
       }
-      case TagName.body: {
-        attributeData = applyAttributes(htmlElement, document.body);
-        break;
+    }
+    return {headElement, attributeData}
+  }, [fragment, tag])
+
+  useEffect(() => {
+    return () => {
+      if (data.headElement !== undefined) {
+        document.head.removeChild(data.headElement)
+      } else if (data.attributeData !== undefined) {
+        for (const attrName of data.attributeData.appliedAttrNames) {
+          data.attributeData.to.removeAttribute(attrName);
+        }
       }
-      case TagName.html: {
-        const html = document.querySelector("html")!;
-        attributeData = applyAttributes(htmlElement, html);
-        break;
-      }
-      default: {
-        headElement = addHeadElement(htmlElement);
-        break;
-      }
+    }
+  }, []);
+
+  useEffect(() => {
+
+    if(data.headElement !== undefined){
+      document.head.appendChild(data.headElement);
+    }else if (data.attributeData !== undefined){
+      applyAttributes(data.attributeData);
     }
 
-    return () => {
-      if (headElement !== undefined) {
-        document.head.removeChild(headElement)
-      } else if (attributeData !== undefined) {
-        for (const attrName of attributeData.appliedAttrNames) {
-          attributeData.to.removeAttribute(attrName);
-        }
-      }
-    }
-  }, [fragment, tag]);
+  }, [data]);
 
   return null;
 }
