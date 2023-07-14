@@ -10,10 +10,11 @@ export const createTagComponent =
     T extends TagName,
   >
   (
+    displayName: string,
     tagType: T,
     isValid?: (value: TagPropsMap[T]) => boolean,
     emptyFallback?: () => TagPropsMap[T]): FC<TagPropsMap[T]> => {
-    return memo((tagProps) => {
+    const component = memo((tagProps) => {
       const actions = useScopedHelmetContext().actions;
 
       const rootContext = useHelmetContext();
@@ -49,4 +50,7 @@ export const createTagComponent =
 
       return null;
     })
+
+    component.displayName = displayName;
+    return component;
   }

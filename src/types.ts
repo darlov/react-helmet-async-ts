@@ -57,6 +57,16 @@ export interface ITypedTagProps<TName extends TagName> {
   tagProps: TagPropsMap[TName]
 }
 
+export type TypedTagsProps = ITypedTagProps<TagName.base>
+  | ITypedTagProps<TagName.body>
+  | ITypedTagProps<TagName.html>
+  | ITypedTagProps<TagName.link>
+  | ITypedTagProps<TagName.meta>
+  | ITypedTagProps<TagName.noscript>
+  | ITypedTagProps<TagName.script>
+  | ITypedTagProps<TagName.style>
+  | ITypedTagProps<TagName.title>;
+
 export type TypedTagProps = { tagProps: Exclude<TagProps, BodyProps | HtmlProps>, tagType: TagName };
 
 
@@ -73,7 +83,7 @@ export type TagProps =
 
 export interface IHelmetInstanceState {
   id: number;
-  tags?: ITypedTagProps<TagName>[]
+  tags?: TypedTagsProps[]
 }
 
 export interface IHelmetState {
@@ -89,7 +99,7 @@ export interface IHelmetState {
   // titleTag?: ITypedTagProps<TagName.title>,
   isEmptyState: boolean
 
-  tags: ITypedTagProps<TagName>[]
+  tags: TypedTagsProps[]
 }
 
 export interface IHelmetDatum<T> {
@@ -138,8 +148,8 @@ export type ScriptTagConfigName = TagName.script | typeof ScriptTagName;
 export type LinkTagConfigName = TagName.link | typeof LinkTagName;
 export type NoscriptTagConfigName = TagName.noscript | typeof NoscriptTagName;
 
-export type TagConfigName = TitleTagConfigName 
-  | BaseTagConfigName 
+export type TagConfigName = TitleTagConfigName
+  | BaseTagConfigName
   | MetaTagConfigName
   | StyleTagConfigName
   | ScriptTagConfigName

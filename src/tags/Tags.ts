@@ -27,22 +27,13 @@ const titleEmptyFallback = () : TitleProps => {
   return  {children: ""};
 };
 
-export const Title = createTagComponent(TagName.title, undefined, titleEmptyFallback);
-Title.displayName = "Title";
-export const Meta = createTagComponent(TagName.meta, isMetaValid);
-Meta.displayName = "Meta"
-export const Base = createTagComponent(TagName.base, isBaseValid);
-Base.displayName = "Base";
-export const Body = createTagComponent(TagName.body, isBodyValid);
-Body.displayName = "Body";
-export const Html = createTagComponent(TagName.html, isHtmlValid);
-Html.displayName = "Html"
-export const Link = createTagComponent(TagName.link, isLinkValid);
-Link.displayName = "Link";
-export const Noscript = createTagComponent(TagName.noscript, isNoscriptValid);
-Noscript.displayName = "Noscript";
-export const Script = createTagComponent(TagName.script, isScriptValid);
-Script.displayName = "Script";
-export const Style = createTagComponent(TagName.style, isStyleValid);
-Style.displayName = "Style";
+export const Title = createTagComponent("Title", TagName.title, undefined, titleEmptyFallback);
+export const Meta = createTagComponent("Meta", TagName.meta, isMetaValid);
+export const Base = createTagComponent("Base", TagName.base, isBaseValid);
+export const Body = createTagComponent("Body", TagName.body, isBodyValid);
+export const Html = createTagComponent("Html", TagName.html, isHtmlValid);
+export const Link = createTagComponent("Link", TagName.link, isLinkValid);
+export const Noscript = createTagComponent("Noscript", TagName.noscript, isNoscriptValid);
+export const Script = createTagComponent("Script", TagName.script, isScriptValid);
+export const Style = createTagComponent("Style", TagName.style, isStyleValid);
 

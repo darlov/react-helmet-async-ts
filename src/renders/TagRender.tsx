@@ -1,8 +1,11 @@
-import {ITypedTagProps, TagName} from "../types";
-import React, {createElement, FC, memo, useEffect, useInsertionEffect, useMemo, useState} from "react";
+import {ITypedTagProps, TagName, TagPropsMap, TypedTagsProps} from "../types";
+import React, {createElement, FC, memo, useEffect, useInsertionEffect, useMemo, useRef, useState} from "react";
 import {createPortal} from "react-dom";
+import {TagsRender} from "./TagsRender";
 
-type TagRenderProps = ITypedTagProps<TagName>["tagProps"] & { tagType: TagName }
+interface ITagRender {
+  tag: TypedTagsProps
+}
 
 const isElement = (node: Node): node is Element => {
   const element = (node as Element);
@@ -21,19 +24,19 @@ const processChildList = (mutation: MutationRecord, isRootNode: boolean, tagType
 
       for (const addedNode of mutation.addedNodes) {
         if (existTitle !== null) {
-          
-          if(isRootNode && isElement(addedNode)){
+
+          if (isRootNode && isElement(addedNode)) {
             applyAttributes(addedNode, existTitle);
           }
-          if(!isRootNode){
-            if(addedNode.parentNode !== null) {
+          if (!isRootNode) {
+            if (addedNode.parentNode !== null) {
               addedNode.parentNode.childNodes.forEach((node, key) => {
                 const existNode = existTitle.childNodes[key];
-                if(existNode === undefined){
+                if (existNode === undefined) {
                   existTitle.appendChild(node.cloneNode(true))
-                } else if(!node.isEqualNode(existNode)){
+                } else if (!node.isEqualNode(existNode)) {
                   existTitle.replaceChild(node.cloneNode(true), existNode);
-                }                
+                }
               })
             }
           } else {
@@ -51,7 +54,7 @@ const processChildList = (mutation: MutationRecord, isRootNode: boolean, tagType
         if (existTitle !== null) {
           if (!isRootNode) {
             if (addedNode.parentNode !== null) {
-              
+
               existTitle.childNodes.forEach((node, key) => {
                 const existNode = existTitle.childNodes[key];
               })
@@ -72,55 +75,43 @@ const processChildList = (mutation: MutationRecord, isRootNode: boolean, tagType
   }
 }
 
-const documentMutationCallback = (mutations: MutationRecord[], tag: TagRenderProps, fragment: DocumentFragment) => {
-  console.log(mutations);
 
-  for (const mutation of mutations) {
-
-    const isRootNode = mutation.target == fragment;
-
-    switch (mutation.type) {
-      case "attributes": {
-        break;
-      }
-      case "childList": {
-        processChildList(mutation, isRootNode, tag.tagType);
-        break;
-      }
-
-      case "characterData": {
-        break
-      }
-    }
-  }
+const runInitial = (from: Element, to: Element | null, isRemovable: boolean)=> {
+  console.log(from, to);
 }
 
-export const TagRender: FC<TagRenderProps> = memo<TagRenderProps>((tag) => {
-  const placeHolder = useMemo(() => {
-    return document.createDocumentFragment();
-  }, []);
+export const TagRender: FC<ITagRender> = memo(({tag}) => {
+  const ref = useRef<Element>();
+  
+  useEffect(() => {
+      if(ref.current !== undefined) {
 
-  useInsertionEffect(() => {
-    const config: MutationObserverInit = {attributes: true, childList: true, subtree: true, characterData: true};
+        let toElement: Element | null = null;
+        switch (tag.tagType) {
+          case TagName.html:
+          case TagName.body:
+          case TagName.base:
+          case TagName.title:
+            toElement = document.querySelector(tag.tagType);
+        }
 
-    const observer = new MutationObserver((mutations) => documentMutationCallback(mutations, tag, placeHolder));
-    observer.observe(placeHolder, config);
-    return () => observer.disconnect();
-  }, [])
+        runInitial(ref.current, toElement, false);
+        
+        const observer = new MutationObserver((mutations) => console.log(tag.tagType, tag.id, mutations));
+        observer.observe(ref.current, {attributes: true, childList: true, subtree: true, characterData: true});    
 
-  const {tagType, ...restObject} = tag;
-
-
-  const tagComponent = createElement(
-    (tagType == TagName.html || tagType == TagName.body)
-      ? "div"
-      : tagType,
-    {...restObject, "data-rh": "true"});
-
-  return <>
-    {createPortal(tagComponent, placeHolder)}
-    {/*<HtmlTagInjector fragment={placeHolder} tag={tag}/>*/}
-  </>
+        return () => observer.disconnect();
+      }
+  }, [ref])
+  
+  switch (tag.tagType) {
+    case TagName.html:
+    case TagName.body:
+      return createElement("span", {key: tag.id, ...tag.tagProps, "data-rh": true, ref: ref});
+    default:
+      return createElement(tag.tagType, {key: tag.id, ...tag.tagProps, "data-rh": true, ref: ref});
+  }
 });
+
 
 TagRender.displayName = "TagRender";

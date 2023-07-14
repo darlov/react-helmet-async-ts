@@ -14,7 +14,7 @@ import {
   TagName,
   TagNames,
   TagPriorityConfig,
-  TypedTagProps,
+  TypedTagProps, TypedTagsProps,
 } from "./types";
 import {renderToStaticMarkup} from "react-dom/server";
 
@@ -237,13 +237,13 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
   //   return result !== undefined ? {tagType: TagName.title, tagProps: {children: result?.tagProps.children}} : undefined
   // };
 
-  const uniqueItems = new Map<string, ITypedTagProps<TagName>[]>();
-  let otherItems: ITypedTagProps<TagName>[] = [];
+  const uniqueItems = new Map<string, TypedTagsProps[]>();
+  let otherItems: TypedTagsProps[] = [];
 
   for (const instance of instances) {
     const isEmptyInstance = _.isEmptyArray(instance.tags);
 
-    const instanceDuplicateItems = new Map<string, ITypedTagProps<TagName>[]>();
+    const instanceDuplicateItems = new Map<string, TypedTagsProps[]>();
 
     if (instance.tags) {
       for (const tag of instance.tags) {
@@ -327,11 +327,11 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
 // }
 
 
-const buildHeaderTags = (sourceTags: ITypedTagProps<TagName>[], priorityConfig: Map<TagConfigName, ITagPriorityConfigMap[]>): ITypedTagProps<TagName>[] => {
-  let headerTags: ITypedTagProps<TagName>[] = [];
+const buildHeaderTags = (sourceTags: TypedTagsProps[], priorityConfig: Map<TagConfigName, ITagPriorityConfigMap[]>): TypedTagsProps[] => {
+  let headerTags: TypedTagsProps[] = [];
 
   const outOfConfigStartIndex = Number.MAX_VALUE - sourceTags.length;
-  const priorityTags: { priority: number, tag: ITypedTagProps<TagName> }[] = [];
+  const priorityTags: { priority: number, tag: TypedTagsProps }[] = [];
 
   for (let i = 0; i < sourceTags.length; i++) {
     const sourceTag = sourceTags[i];
