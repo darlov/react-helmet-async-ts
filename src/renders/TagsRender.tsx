@@ -50,7 +50,7 @@ export const TagsRender: FC<ITagRenderProps> = ({canUseDOM, state}) => {
     // }, [])
     
     if (canUseDOM && state && state.tags.length > 0) {
-        const tags = state.tags.map((tag) => <TagRender key={tag.id} tag={tag} />);
+        const tags = state.tags.map((tag, index) => <TagRender key={tag.id} tag={tag} index={index} />);
         return createPortal(<>{tags}</>, placeHolder)
     }
 

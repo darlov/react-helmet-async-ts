@@ -5,6 +5,7 @@ import {TagsRender} from "./TagsRender";
 
 interface ITagRender {
   tag: TypedTagsProps
+  index: number
 }
 
 const isElement = (node: Node): node is Element => {
@@ -76,34 +77,48 @@ const processChildList = (mutation: MutationRecord, isRootNode: boolean, tagType
 }
 
 
-const runInitial = (from: Element, to: Element | null, isRemovable: boolean)=> {
-  console.log(from, to);
+const runInitial = (from: Element, to: Element | null, updateChild: boolean, index: number) => {
+
+  const element = from.cloneNode(true);
+  if (to === null) {
+    document.head.insertBefore
+  }else {
+    
+  }
+
+
+  return () => {
+    if (to === null) {
+      document.head.removeChild(element);
+    }
+  }
 }
 
-export const TagRender: FC<ITagRender> = memo(({tag}) => {
+export const TagRender: FC<ITagRender> = memo(({tag, index}) => {
   const ref = useRef<Element>();
-  
+
   useEffect(() => {
-      if(ref.current !== undefined) {
+    if (ref.current !== undefined) {
 
-        let toElement: Element | null = null;
-        switch (tag.tagType) {
-          case TagName.html:
-          case TagName.body:
-          case TagName.base:
-          case TagName.title:
-            toElement = document.querySelector(tag.tagType);
-        }
+      let toElement: Element | null = null;
+      let updateChild = tag.tagType != TagName.html && tag.tagType != TagName.body;
 
-        runInitial(ref.current, toElement, false);
-        
-        const observer = new MutationObserver((mutations) => console.log(tag.tagType, tag.id, mutations));
-        observer.observe(ref.current, {attributes: true, childList: true, subtree: true, characterData: true});    
-
-        return () => observer.disconnect();
+      switch (tag.tagType) {
+        case TagName.html:
+        case TagName.body:
+        case TagName.base:
+        case TagName.title:
+          toElement = document.querySelector(tag.tagType);
       }
-  }, [ref])
-  
+
+      const clearCallBack = runInitial(ref.current, toElement, updateChild, index);
+
+      return () => {
+        clearCallBack();
+      };
+    }
+  })
+
   switch (tag.tagType) {
     case TagName.html:
     case TagName.body:
