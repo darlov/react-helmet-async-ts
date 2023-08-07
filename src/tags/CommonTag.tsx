@@ -12,7 +12,7 @@ export const createTagComponent =
   (
     displayName: string,
     tagType: T,
-    isValid?: (value: TagPropsMap[T]) => boolean,
+    isValid?: (value: TagPropsMap[T], tagType: T) => boolean,
     emptyFallback?: () => TagPropsMap[T]): FC<TagPropsMap[T]> => {
     const component = memo((tagProps) => {
       const actions = useScopedHelmetContext().actions;
@@ -26,7 +26,7 @@ export const createTagComponent =
 
       const addCallback = useCallback(() => {
         if (isValid) {
-          if (isValid(typeProps.tagProps)) {
+          if (isValid(typeProps.tagProps, tagType)) {
             actions.add(typeProps);
             return () => {
               actions.remove(typeProps);

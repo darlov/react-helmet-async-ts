@@ -1,39 +1,36 @@
 import {
-  BaseProps,
-  BodyProps,
-  HtmlProps,
-  LinkProps,
-  MetaProps,
-  NoscriptProps,
-  primaryLinkAttributes,
-  primaryMetaAttributes,
-  ScriptProps,
-  StyleProps,
-  TagName,
+  TagName, TagPropsMap,
   TitleProps
 } from "../types";
 import {createTagComponent} from "./CommonTag";
 import {_} from "../utils";
+import {tagConfigs} from "../tagConfiguration";
 
-const isMetaValid = (tag: MetaProps) => primaryMetaAttributes.some(attr => tag[attr] !== undefined)
-const isBaseValid = (tag: BaseProps) => tag.href !== undefined
-const isBodyValid = (tag: BodyProps) => !_.isEmpty(tag);
-const isHtmlValid = (tag: HtmlProps) => !_.isEmpty(tag);
-const isLinkValid = (tag: LinkProps) => primaryLinkAttributes.every(attr => tag[attr] !== undefined);
-const isNoscriptValid = (tag: NoscriptProps) => tag.children !== undefined;
-const isScriptValid = (tag: ScriptProps) => tag.children !== undefined || tag.src !== undefined;
-const isStyleValid = (tag: StyleProps) => tag.children !== undefined;
+const isTagValid = <T extends TagName>(tag: TagPropsMap[T], tagType: T) => {
+  const config = tagConfigs[tagType];
+
+  if(config.isValid){
+    return config.isValid(tag, config);
+  }
+  
+  if (config.primaryAttrs) {
+    return config.primaryAttrs.some(attr => tag[attr] !== undefined)
+  }
+  
+  return !_.isEmpty(tag);
+}
+
 const titleEmptyFallback = () : TitleProps => {
   return  {children: ""};
 };
 
 export const Title = createTagComponent("Title", TagName.title, undefined, titleEmptyFallback);
-export const Meta = createTagComponent("Meta", TagName.meta, isMetaValid);
-export const Base = createTagComponent("Base", TagName.base, isBaseValid);
-export const Body = createTagComponent("Body", TagName.body, isBodyValid);
-export const Html = createTagComponent("Html", TagName.html, isHtmlValid);
-export const Link = createTagComponent("Link", TagName.link, isLinkValid);
-export const Noscript = createTagComponent("Noscript", TagName.noscript, isNoscriptValid);
-export const Script = createTagComponent("Script", TagName.script, isScriptValid);
-export const Style = createTagComponent("Style", TagName.style, isStyleValid);
+export const Meta = createTagComponent("Meta", TagName.meta, isTagValid);
+export const Base = createTagComponent("Base", TagName.base, isTagValid);
+export const Body = createTagComponent("Body", TagName.body, isTagValid);
+export const Html = createTagComponent("Html", TagName.html, isTagValid);
+export const Link = createTagComponent("Link", TagName.link, isTagValid);
+export const Noscript = createTagComponent("Noscript", TagName.noscript, isTagValid);
+export const Script = createTagComponent("Script", TagName.script, isTagValid);
+export const Style = createTagComponent("Style", TagName.style, isTagValid);
 

@@ -46,11 +46,6 @@ export type TagPropsMap = {
   [TagName.title]: TitleProps,
 }
 
-export interface ITagProps {
-  tagType: TagName,
-  tagProps: Exclude<TagProps, BodyProps | HtmlProps>
-}
-
 export interface ITypedTagProps<TName extends TagName> {
   id: string,
   tagType: TName,
@@ -66,9 +61,6 @@ export type TypedTagsProps = ITypedTagProps<TagName.base>
   | ITypedTagProps<TagName.script>
   | ITypedTagProps<TagName.style>
   | ITypedTagProps<TagName.title>;
-
-export type TypedTagProps = { tagProps: Exclude<TagProps, BodyProps | HtmlProps>, tagType: TagName };
-
 
 export type TagProps =
   TitleProps
@@ -87,18 +79,7 @@ export interface IHelmetInstanceState {
 }
 
 export interface IHelmetState {
-  // sourceTags: ITypedTagProps<TagName>[]
-  // baseTag?: ITypedTagProps<TagName.base>,
-  // bodyAttributes?: ITypedTagProps<TagName.body>,
-  // htmlAttributes?: ITypedTagProps<TagName.html>
-  // linkTags: ITypedTagProps<TagName.link>[],
-  // metaTags: ITypedTagProps<TagName.meta>[]
-  // noscriptTags: ITypedTagProps<TagName.noscript>[],
-  // scriptTags: ITypedTagProps<TagName.script>[],
-  // styleTags: ITypedTagProps<TagName.style>[],
-  // titleTag?: ITypedTagProps<TagName.title>,
   isEmptyState: boolean
-
   tags: TypedTagsProps[]
 }
 
@@ -116,18 +97,10 @@ export interface IHelmetServerState {
 export interface IHelmetDataContext {
   state?: IHelmetServerState;
 }
-
-export type MetaAttribute = keyof Pick<MetaProps, "charSet" | "name" | "httpEquiv" | "property" | "itemProp">;
-export type LinkAttribute = keyof Pick<LinkProps, "rel" | "href">;
-export const primaryMetaAttributes: readonly MetaAttribute[] = ["charSet", "name", "httpEquiv", "property", "itemProp"] as const
-export const primaryLinkAttributes: readonly LinkAttribute[] = ["rel", "href"] as const
-
 export const HELMET_ATTRIBUTE = 'data-rh';
 
 
-export type ModifyInstanceCallback = <
-  T extends TagName,
->(instance: IHelmetInstanceState, value: ITypedTagProps<T>) => void;
+export type ModifyInstanceCallback = (instance: IHelmetInstanceState, value: TypedTagsProps) => void;
 
 interface ITagValueConfig<T> {
   seoAnyValue?: boolean,
@@ -178,37 +151,6 @@ export const TagValue = {
   }
 }
 
-export const DefaultTagPriorityConfig: TagPriorityConfig[] = [
-  {tagName: TagName.meta, charSet: TagValue.any()},
-  {tagName: TagName.title},
-  {tagName: TagName.base},
-  {tagName: TagName.meta, name: "generator"},
-  {tagName: TagName.meta, name: "robots"},
-  {
-    tagName: TagName.meta,
-    property: TagValue.oneOf(
-      "og:type",
-      "og:title",
-      "og:url",
-      "og:image",
-      "og:image:alt",
-      "og:description",
-      "twitter:url",
-      "twitter:title",
-      "twitter:description",
-      "twitter:image",
-      "twitter:image:alt",
-      "twitter:card",
-      "twitter:site",
-    )
-  },
-  {tagName: TagName.link, rel: "canonical"},
-  {tagName: TagName.meta},
-  {tagName: TagName.link},
-  {tagName: TagName.style},
-  {tagName: TagName.script},
-  {tagName: TagName.noscript}
-];
 
 
 

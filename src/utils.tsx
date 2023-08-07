@@ -4,19 +4,15 @@ import {
   IHelmetServerState,
   IHelmetState,
   ITagPriorityConfigMap,
-  ITagProps,
   ITypedTagProps,
-  LinkProps,
-  MetaProps,
-  primaryLinkAttributes,
-  primaryMetaAttributes,
   TagConfigName,
   TagName,
   TagNames,
   TagPriorityConfig,
-  TypedTagProps, TypedTagsProps,
+  TypedTagsProps,
 } from "./types";
 import {renderToStaticMarkup} from "react-dom/server";
+import {tagConfigs, TagRenderConfigs} from "./tagConfiguration";
 
 export const addUniqueItem = <T, K extends T[] | undefined>(
   items: K,
@@ -47,20 +43,16 @@ export const removeItem = <T, K extends T[] | undefined>(
 export namespace _ {
   export type TSelector<T> = ((elem: T) => any) | keyof T;
 
-  export const sortBy = <T, K extends T[] | undefined>(array: K, selector: TSelector<T>): K => {
-    if (array === undefined) {
-      return array;
-    }
-
+  export const sortBy = <T,>(array: T[], selector: TSelector<T>) => {
     if (typeof selector === "function") {
       return array.sort((x, y) =>
         selector(x) > selector(y) ? 1 : selector(x) < selector(y) ? -1 : 0
-      ) as K;
+      );
     }
 
     return array.sort((x, y) =>
       x[selector] > y[selector] ? 1 : x[selector] < y[selector] ? -1 : 0
-    ) as K;
+    );
   };
 
   export const clear = <T, >(array: T[] | undefined) => {
@@ -121,27 +113,6 @@ export namespace _ {
   };
 }
 
-const findMetaPrimaryAttribute = (metaProps: MetaProps) => {
-  const foundAttr = primaryMetaAttributes.find(attr => metaProps[attr] !== undefined);
-
-  if (foundAttr !== undefined) {
-    return `meta_${foundAttr}_${metaProps[foundAttr]}`;
-  }
-
-  return undefined;
-};
-
-const findLinkPrimaryAttribute = (linkProps: LinkProps) => {
-  const foundAttr = primaryLinkAttributes.find(attr => {
-    return linkProps[attr] !== undefined ? !(attr === "rel" && linkProps[attr] === "stylesheet") : false;
-  });
-
-  if (foundAttr !== undefined) {
-    return `link_${foundAttr}_${linkProps[foundAttr]}`;
-  }
-
-  return undefined;
-};
 
 // const mergeAllToOne = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
 //   values: TElement[] | undefined,
@@ -227,6 +198,10 @@ const findLinkPrimaryAttribute = (linkProps: LinkProps) => {
 //   return result;
 // };
 
+export const getUniqueKey = <T extends TagName,>(tag: ITypedTagProps<T>, tagConfig: TagRenderConfigs[T]) : string | undefined => {
+  return tagConfig.getUniqueKey && tagConfig.getUniqueKey(tag, tagConfig);
+} 
+
 export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagConfigName, ITagPriorityConfigMap[]>): IHelmetState => {
   const state: IHelmetState = {
     tags: [],
@@ -241,48 +216,26 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
   let otherItems: TypedTagsProps[] = [];
 
   for (const instance of instances) {
-    const isEmptyInstance = _.isEmptyArray(instance.tags);
-
     const instanceDuplicateItems = new Map<string, TypedTagsProps[]>();
 
     if (instance.tags) {
       for (const tag of instance.tags) {
-        switch (tag.tagType) {
-          case TagName.title:
-          case TagName.base:
-          case TagName.body:
-          case TagName.html:
-            const existItems = uniqueItems.get(tag.tagType) ?? [];
-            uniqueItems.set(tag.tagType, [{...existItems[0], ...tag}])
-            break;
-          case TagName.style:
-          case TagName.script:
-          case TagName.noscript:
+        const tagConfig = tagConfigs[tag.tagType];
+
+        if (tagConfig.isUnique) {
+          const existItems = uniqueItems.get(tag.tagType) ?? [];
+          uniqueItems.set(tag.tagType, [{...existItems[0], ...tag}])
+        } else {
+          const primaryAttrKey = getUniqueKey(tag, tagConfig);
+          if (primaryAttrKey !== undefined) {
+            const values = instanceDuplicateItems.get(primaryAttrKey);
+            if (values !== undefined) {
+              values.push(tag)
+            } else {
+              instanceDuplicateItems.set(primaryAttrKey, [tag])
+            }
+          } else {
             otherItems.push(tag);
-            break;
-          case TagName.link: {
-            const primaryAttrKey = findLinkPrimaryAttribute(tag.tagProps as LinkProps);
-            if (primaryAttrKey !== undefined) {
-              const values = instanceDuplicateItems.get(primaryAttrKey);
-              if (values !== undefined) {
-                values.push(tag)
-              } else {
-                instanceDuplicateItems.set(primaryAttrKey, [tag])
-              }
-            }
-            break;
-          }
-          case TagName.meta: {
-            const primaryAttrKey = findMetaPrimaryAttribute(tag.tagProps as MetaProps);
-            if (primaryAttrKey !== undefined) {
-              const values = instanceDuplicateItems.get(primaryAttrKey);
-              if (values !== undefined) {
-                values.push(tag)
-              } else {
-                instanceDuplicateItems.set(primaryAttrKey, [tag])
-              }
-            }
-            break;
           }
         }
       }

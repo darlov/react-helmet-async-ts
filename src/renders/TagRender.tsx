@@ -1,11 +1,10 @@
-import {ITypedTagProps, TagName, TagPropsMap, TypedTagsProps} from "../types";
-import React, {createElement, FC, memo, useEffect, useInsertionEffect, useMemo, useRef, useState} from "react";
-import {createPortal} from "react-dom";
-import {TagsRender} from "./TagsRender";
+import {TagName, TypedTagsProps} from "../types";
+import React, {createElement, FC, memo, useEffect, useMemo, useRef, useState} from "react";
 
 interface ITagRender {
   tag: TypedTagsProps
   index: number
+  firstElement: Element | null
 }
 
 const isElement = (node: Node): node is Element => {
@@ -76,55 +75,116 @@ const processChildList = (mutation: MutationRecord, isRootNode: boolean, tagType
   }
 }
 
-
-const runInitial = (from: Element, to: Element | null, updateChild: boolean, index: number) => {
-
-  const element = from.cloneNode(true);
-  if (to === null) {
-    document.head.insertBefore
-  }else {
-    
-  }
-
-
-  return () => {
-    if (to === null) {
-      document.head.removeChild(element);
-    }
+const appendElement = (item: Element, appendTo: Element | null) => {
+  if (appendTo === null) {
+    document.head.appendChild(item);
+  } else {
+    appendTo.insertAdjacentElement("afterend", item);
   }
 }
 
-export const TagRender: FC<ITagRender> = memo(({tag, index}) => {
-  const ref = useRef<Element>();
+const runInitial = (from: Element, to: Element | null, updateChild: boolean, appendTo: Element | null): [Element, () => void] => {
+
+  const element = from.cloneNode() as Element;
+  if (to === null) {
+    appendElement(element, appendTo);
+  } else {
+  }
+
+  return [to ?? element, () => {
+    if (to === null) {
+      element.remove();
+    }
+  }]
+}
+
+const isApplyOnyAttributes = (tagName: TagName) => {
+  switch (tagName) {
+    case TagName.html:
+    case TagName.body:
+    case TagName.base:
+      return true
+    default:
+      return false;
+  }
+};
+
+const isUniqueTag = (tagName: TagName) => {
+  switch (tagName) {
+    case TagName.html:
+    case TagName.body:
+    case TagName.base:
+    case TagName.title:
+      return true
+    default:
+      return false;
+  }
+};
+
+const getParentNode = (tagName: TagName): ParentNode => {
+  switch (tagName) {
+    case TagName.html:
+    case TagName.body:
+      return document;
+    default:
+      return document.head;
+  }
+}
+
+const getElementTo = (tag: TypedTagsProps): Element | undefined => {
+  const parentNode = getParentNode(tag.tagType);
+  const existElements = parentNode.querySelectorAll(tag.tagType);
+  if (existElements.length) {
+    if (isUniqueTag(tag.tagType)) {
+      if (existElements.length == 1) {
+        return existElements[0]
+      } else {
+        throw new Error(`Found more the one unique ${tag.tagType} tags.`)
+      }
+    } else {
+      
+    }
+  }
+
+
+  return undefined;
+}
+
+export const TagRender: FC<ITagRender> = memo(({tag, index, firstElement}) => {
+  const elementFrom = useRef<Element>();
+  const [elementTo, setElementTo] = useState<Element | undefined>(() => getElementTo(tag));
+
 
   useEffect(() => {
-    if (ref.current !== undefined) {
+    if (elementFrom.current !== undefined && firstElement !== null) {
 
       let toElement: Element | null = null;
-      let updateChild = tag.tagType != TagName.html && tag.tagType != TagName.body;
+      let updateChild = !isApplyOnyAttributes(tag.tagType);
+      const existElements = getParentNode(tag.tagType).querySelectorAll(tag.tagType);
 
-      switch (tag.tagType) {
-        case TagName.html:
-        case TagName.body:
-        case TagName.base:
-        case TagName.title:
-          toElement = document.querySelector(tag.tagType);
+
+      let appendToElement: Element | null = firstElement;
+
+      let i = 1;
+      while (appendToElement?.nextElementSibling !== null && i < index) {
+        appendToElement = appendToElement.nextElementSibling;
+        i++;
       }
 
-      const clearCallBack = runInitial(ref.current, toElement, updateChild, index);
+      const [element, clearCallBack] = runInitial(elementFrom.current, toElement, updateChild, appendToElement ?? document.head.lastElementChild);
 
       return () => {
         clearCallBack();
       };
     }
-  })
+  }, [firstElement, elementFrom])
 
   switch (tag.tagType) {
     case TagName.html:
     case TagName.body:
-      return createElement("span", {key: tag.id, ...tag.tagProps, "data-rh": true, ref: ref});
+      return createElement("span", {key: tag.id, ...tag.tagProps, "data-rh": true, ref: elementFrom});
     default:
-      return createElement(tag.tagType, {key: tag.id, ...tag.tagProps, "data-rh": true, ref: ref});
+      return createElement(tag.tagType, {key: tag.id, ...tag.tagProps, "data-rh": true, ref: elementFrom});
   }
 });
 

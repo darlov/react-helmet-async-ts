@@ -2,9 +2,10 @@ import {
   IHelmetDataContext,
   IHelmetInstanceState,
   IHelmetState, TagPriorityConfig,
-  ModifyInstanceCallback, DefaultTagPriorityConfig, ITagPriorityConfigMap, TagConfigName
+  ModifyInstanceCallback, ITagPriorityConfigMap, TagConfigName
 } from "./types";
-import {_, buildServerState, buildState, removeItem} from "./utils";
+import {_, buildServerState, buildState} from "./utils";
+import {DefaultTagPriorityConfig} from "./tagConfiguration";
 
 
 const buildPriorityMap = (priorityConfig: TagPriorityConfig[]) => {

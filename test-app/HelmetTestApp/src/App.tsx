@@ -42,8 +42,8 @@ function App() {
           {/*<Title>Hello World {count}</Title>*/}
 
           <Link rel="canonical" href="https://www.tacobell.com/"/>
-          <Meta charSet="UTF-8"/>
-          {count % 3 === 0 ? <Meta name="generator" property={"dsfsdf"}/> : null}
+           <Meta name="generator" property={"dsfsdf"}/>
+          {count % 3 === 0 ? <Meta charSet="UTF-16"/> : null}
           <Html className={"class " + count} lang="en"/>
           <Body className={"class " + count} color={"#ff"}/>
         </Helmet>}
