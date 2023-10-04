@@ -100,7 +100,7 @@ export interface IHelmetDataContext {
 export const HELMET_ATTRIBUTE = 'data-rh';
 
 
-export type ModifyInstanceCallback = (instance: IHelmetInstanceState, value: TypedTagsProps) => void;
+export type ModifyInstanceCallback = <T extends TagName>(instance: IHelmetInstanceState, value: ITypedTagProps<T>) => void;
 
 interface ITagValueConfig<T> {
   seoAnyValue?: boolean,
@@ -149,6 +149,13 @@ export const TagValue = {
   oneOf: <T, >(...val: T[]): ITagValueConfig<T> => {
     return {seoValues: val}
   }
+}
+
+export type AnchorElementType = "first" | "firstIncluded" | "parent";
+
+export interface IHeadAnchorElement{
+  element: Element,
+  elementType: AnchorElementType
 }
 
 

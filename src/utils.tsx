@@ -113,91 +113,6 @@ export namespace _ {
   };
 }
 
-
-// const mergeAllToOne = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
-//   values: TElement[] | undefined,
-//   isEmptyState: boolean,
-//   result: TElement | undefined,
-//   usePrevResult?: boolean,
-//   emptyStateFallback?: (result: TElement | undefined) => TElement | undefined
-// ): TElement | undefined => {
-//   if (isEmptyState) {
-//     if (emptyStateFallback !== undefined) {
-//       return emptyStateFallback(result);
-//     }
-//
-//     return undefined;
-//   }
-//
-//   return (values || []).reduce((prev, current) => {
-//     return usePrevResult ? {...prev, ...current} : {...current};
-//   }, result);
-// };
-
-// const mergeAllToAll = <T extends keyof HelmetTags, TElement extends ArrayElement<HelmetTags[T]>>(
-//   values: TElement[] | undefined,
-//   isEmptyState: boolean,
-//   result: TElement[]
-// ): TElement[] => {
-//   if (isEmptyState) {
-//     _.clear(result);
-//   }
-//
-//   if (values) {
-//     result.push(...values);
-//   }
-//
-//   return result;
-// };
-
-// const mergeAllByPrimaryAttribute = <T extends keyof HelmetTags, TElement = HelmetTags[T]>(
-//   values: TElement[] | undefined,
-//   isEmptyState: boolean,
-//   result: TElement[],
-//   primaryAttributeSelector: (tag: TElement) => string | undefined
-// ) => {
-//   if (isEmptyState) {
-//     _.clear(result);
-//   } else {
-//     if (values) {
-//       if (result.length === 0) {
-//         result.push(...values);
-//       } else {
-//         const instanceGrouped = _.groupBy(
-//           values,
-//           primaryAttributeSelector,
-//           (item, index) => [item, index] as [TElement, number]
-//         );
-//         const resultGrouped = _.groupBy(
-//           result,
-//           primaryAttributeSelector,
-//           (item, index) => [item, index] as [TElement, number]
-//         );
-//
-//         for (const [attr, instanceTags] of instanceGrouped.entries()) {
-//           const resultTags = resultGrouped.get(attr);
-//
-//           if (resultTags === undefined) {
-//             result.push(...instanceTags.map(([tags]) => tags));
-//           } else if (instanceTags.length !== resultTags.length) {
-//             result = result.filter(m => !resultTags.some(([tag]) => m === tag));
-//             result.push(...instanceTags.map(([tag]) => tag));
-//           } else {
-//             for (let i = 0; i < instanceTags.length; i++) {
-//               const [instanceTag] = instanceTags[i];
-//               const [resultTag, resultIndex] = resultTags[i];
-//
-//               result[resultIndex] = {...resultTag, ...instanceTag};
-//             }
-//           }
-//         }
-//       }
-//     }
-//   }
-//
-//   return result;
-// };
-
 export const getUniqueKey = <T extends TagName,>(tag: ITypedTagProps<T>, tagConfig: TagRenderConfigs[T]) : string | undefined => {
   return tagConfig.getUniqueKey && tagConfig.getUniqueKey(tag, tagConfig);
 } 
@@ -207,10 +122,6 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
     tags: [],
     isEmptyState: true
   };
-
-  // const titleEmptyStateFallback = (result?: ITypedTagProps<TagName.title>): ITypedTagProps<TagName.title> | undefined => {
-  //   return result !== undefined ? {tagType: TagName.title, tagProps: {children: result?.tagProps.children}} : undefined
-  // };
 
   const uniqueItems = new Map<string, TypedTagsProps[]>();
   let otherItems: TypedTagsProps[] = [];
@@ -265,24 +176,7 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
   return state;
 };
 
-// const addTitle = (state: IHelmetState, priorities: TypedTagProps[]) => {
-//   if (state.titleTag) {
-//     priorities.push(state.titleTag);
-//     state.titleTag = undefined;
-//   }
-// }
-
-// const addBase = (state: IHelmetState, priorities: TypedTagProps[]) => {
-//   if (state.baseTag) {
-//     priorities.push(state.baseTag)
-//     state.baseTag = undefined;
-//   }
-// }
-
-
 const buildHeaderTags = (sourceTags: TypedTagsProps[], priorityConfig: Map<TagConfigName, ITagPriorityConfigMap[]>): TypedTagsProps[] => {
-  let headerTags: TypedTagsProps[] = [];
-
   const outOfConfigStartIndex = Number.MAX_VALUE - sourceTags.length;
   const priorityTags: { priority: number, tag: TypedTagsProps }[] = [];
 
@@ -313,7 +207,7 @@ const buildHeaderTags = (sourceTags: TypedTagsProps[], priorityConfig: Map<TagCo
 
 const isTagMatch = (tag: ITypedTagProps<TagName>, config: TagPriorityConfig) => {
   for (const [key, configValue] of Object.entries(config)) {
-    if (key == "tagName") {
+    if (key === "tagName") {
       continue;
     }
 

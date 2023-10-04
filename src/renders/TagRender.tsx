@@ -1,11 +1,14 @@
-import {TagName, TypedTagsProps} from "../types";
+import {IHeadAnchorElement, TagName, TypedTagsProps} from "../types";
 import React, {createElement, FC, memo, useEffect, useMemo, useRef, useState} from "react";
 
 interface ITagRender {
   tag: TypedTagsProps
   index: number
-  firstElement: Element | null
+  anchor: IHeadAnchorElement
 }
+
+const attributeName = "data-rh";
+const attributeValue = "1";
 
 const isElement = (node: Node): node is Element => {
   const element = (node as Element);
@@ -136,7 +139,7 @@ const getElementTo = (tag: TypedTagsProps): Element | undefined => {
   const existElements = parentNode.querySelectorAll(tag.tagType);
   if (existElements.length) {
     if (isUniqueTag(tag.tagType)) {
-      if (existElements.length == 1) {
+      if (existElements.length === 1) {
         return existElements[0]
       } else {
         throw new Error(`Found more the one unique ${tag.tagType} tags.`)
@@ -150,34 +153,55 @@ const getElementTo = (tag: TypedTagsProps): Element | undefined => {
   return undefined;
 }
 
-export const TagRender: FC<ITagRender> = memo(({tag, index, firstElement}) => {
+const getNextElementSiblingAt = (index: number, element: Element | null) => {
+  let foundElement: Element | null = element;
+  let i = 0;
+  while(foundElement != null && i < index){
+    i++
+    foundElement = foundElement.nextElementSibling;
+  }
+  
+  return foundElement;
+}
+
+const getElementAt = (index: number, anchor: IHeadAnchorElement) : Element | null => {
+  switch(anchor.elementType){
+    case "first":
+      return getNextElementSiblingAt(index, anchor.element.nextElementSibling);
+    case "firstIncluded":
+      return getNextElementSiblingAt(index, anchor.element);
+    case "parent":
+      return anchor.element.children.item(index);
+  }
+}
+
+export const TagRender: FC<ITagRender> = memo(({tag, index, anchor}) => {
   const elementFrom = useRef<Element>();
   const [elementTo, setElementTo] = useState<Element | undefined>(() => getElementTo(tag));
 
 
   useEffect(() => {
-    if (elementFrom.current !== undefined && firstElement !== null) {
+    if (elementFrom.current !== undefined ) {
 
       let toElement: Element | null = null;
       let updateChild = !isApplyOnyAttributes(tag.tagType);
       const existElements = getParentNode(tag.tagType).querySelectorAll(tag.tagType);
 
-
-      let appendToElement: Element | null = firstElement;
-
-      let i = 1;
-      while (appendToElement?.nextElementSibling !== null && i < index) {
-        appendToElement = appendToElement.nextElementSibling;
-        i++;
+      const currentElement = getElementAt(index, anchor);
+      
+      if(currentElement){
+        
       }
-
-      const [element, clearCallBack] = runInitial(elementFrom.current, toElement, updateChild, appendToElement ?? document.head.lastElementChild);
-
-      return () => {
-        clearCallBack();
-      };
+      
+    
+      //
+      // const [element, clearCallBack] = runInitial(elementFrom.current, toElement, updateChild, appendToElement);
+      //
+      // return () => {
+      //   clearCallBack();
+      // };
     }
-  }, [firstElement, elementFrom])
+  }, [anchor, elementFrom])
 
   switch (tag.tagType) {
     case TagName.html:

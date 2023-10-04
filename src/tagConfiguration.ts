@@ -17,7 +17,7 @@ interface ITagRenderConfig<TagType extends TagName> {
   isUnique?: boolean,
   primaryAttrs?: (keyof TagPropsMap[TagType])[] ,
   getUniqueKey?: (tag: ITypedTagProps<TagType>, config: ITagRenderConfig<TagType>) => string | undefined
-  isValid?: (tag: ITypedTagProps<TagType>, config: ITagRenderConfig<TagType>) => boolean
+  isValid?: (tag: TagPropsMap[TagType], config: ITagRenderConfig<TagType>) => boolean
 }
 
 export type TagRenderConfigs = { [P in keyof TagPropsMap]: Readonly<ITagRenderConfig<P>> }
@@ -45,7 +45,7 @@ export const tagConfigs: TagRenderConfigs = {
   [TagName.link]: {
     position: DocumentPosition.Header,
     primaryAttrs: ["href", "rel"],
-    isValid: (tag, config) => config.primaryAttrs!.every(attr => tag.tagProps[attr] !== undefined),
+    isValid: (tag, config) => config.primaryAttrs!.every(attr => tag[attr] !== undefined),
     getUniqueKey: (tag, config) => {
       const attr = config.primaryAttrs!.find(attr => tag.tagProps[attr] !== null && !(attr === "rel" && tag.tagProps[attr] === "stylesheet"));
       return buildKey(tag, attr);

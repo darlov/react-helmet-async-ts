@@ -2,7 +2,7 @@ import {
   IHelmetDataContext,
   IHelmetInstanceState,
   IHelmetState, TagPriorityConfig,
-  ModifyInstanceCallback, ITagPriorityConfigMap, TagConfigName
+  ModifyInstanceCallback, ITagPriorityConfigMap, TagConfigName, TypedTagsProps
 } from "./types";
 import {_, buildServerState, buildState} from "./utils";
 import {DefaultTagPriorityConfig} from "./tagConfiguration";
@@ -59,9 +59,9 @@ export class HelmetData {
 
   addItem: ModifyInstanceCallback = (instance, value) => {
     if (instance.tags === undefined) {
-      instance.tags = [value]
+      instance.tags = [value as TypedTagsProps]
     } else {
-      instance.tags.push(value);
+      instance.tags.push(value as TypedTagsProps);
     }
 
     this.triggerUpdates();
@@ -69,7 +69,7 @@ export class HelmetData {
 
   removeItem: ModifyInstanceCallback = (instance, value) => {
     if (instance.tags !== undefined) {
-      const foundIndex = instance.tags.indexOf(value);
+      const foundIndex = instance.tags.indexOf(value as TypedTagsProps);
       if (foundIndex >= 0) {
         instance.tags.splice(foundIndex, 1);
       }

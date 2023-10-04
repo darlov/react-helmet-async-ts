@@ -1,12 +1,12 @@
-﻿import { defineConfig } from 'vitest/config'
-import react from "@vitejs/plugin-react";
-import typescript from '@rollup/plugin-typescript';
-
+﻿import react from "@vitejs/plugin-react";
+import {defineConfig} from 'vitest/config'
+import tsconfigPaths from 'vite-tsconfig-paths'
+import dts from 'vite-plugin-dts'
 
 // noinspection JSUnusedGlobalSymbols
-export default defineConfig((opt) => {  
+export default defineConfig((opt) => {
   return {
-    plugins: [react(), typescript({tsconfig: opt.mode === "test"? "./test/tsconfig.json" : "./tsconfig.json" })],
+    plugins: [react(), tsconfigPaths(), dts({ rollupTypes: true })],
     test: {
       environmentMatchGlobs: [
         ['test/api/**\/*.{test,spec}.{ts,tsx}', 'jsdom'],
@@ -23,9 +23,8 @@ export default defineConfig((opt) => {
         escapeString: false,
         printFunctionName: true,
       },
-  
     },
-    
+
     build: {
       minify: true,
       lib: {
@@ -53,5 +52,5 @@ export default defineConfig((opt) => {
         },
       },
     },
-  }
+  };
 });

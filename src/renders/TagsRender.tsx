@@ -1,60 +1,36 @@
-import {FC, useInsertionEffect, useMemo, useState} from "react";
-import {IHelmetState, TagName} from "../types";
+import {FC, useMemo} from "react";
+import {AnchorElementType, IHeadAnchorElement, IHelmetState} from "../types";
 import {TagRender} from "./TagRender";
 import {createPortal} from "react-dom";
-import {an} from "vitest/dist/types-198fd1d9";
 
 interface ITagRenderProps {
   state?: IHelmetState;
-  canUseDOM: boolean
+  canUseDOM: boolean,
+  elementSelector?: string,
+  elementType?: Exclude<AnchorElementType, "parent">
 }
 
-const documentMutationCallback = (mutations: MutationRecord[], fragment: DocumentFragment) => {
-  console.log(mutations);
-
-  for (const mutation of mutations) {
-
-    mutation.addedNodes.forEach(m => {
-      console.log((m as any)["__myProp"]);
-    })
-    const isRootNode = mutation.target == fragment;
-
-    switch (mutation.type) {
-      case "attributes": {
-        break;
-      }
-      case "childList": {
-        //processChildList(mutation, isRootNode, tag.tagType);
-        break;
-      }
-
-      case "characterData": {
-        break
-      }
-    }
-  }
-}
-
-export const TagsRender: FC<ITagRenderProps> = ({canUseDOM, state}) => {
-
+export const TagsRender: FC<ITagRenderProps> = ({canUseDOM, state, elementSelector, elementType}) => {
   const placeHolder = useMemo(() => {
     return document.createDocumentFragment();
   }, []);
 
-  // useInsertionEffect(() => {
-  //     const config: MutationObserverInit = {attributes: true, childList: true, subtree: true, characterData: true};
-  //
-  //     const observer = new MutationObserver((mutations) => documentMutationCallback(mutations, placeHolder));
-  //     observer.observe(placeHolder, config);
-  //     return () => observer.disconnect();
-  // }, [])
+  const firstElement = useMemo<IHeadAnchorElement>(() => {
+    if (elementSelector) {
+      const headElement = document.head.querySelectorAll(elementSelector).item(0);
+
+      if (headElement) {
+        return {element: headElement, elementType: elementType ?? "first"}
+      }
+    }
+
+    return {element: document.head, elementType: "parent"}
+
+  }, [elementSelector])
 
   if (canUseDOM && state && state.tags.length > 0) {
-    
-    const firstElement = document.head.querySelector("meta[charset], title");
-
     const tags = state.tags.map(
-      (tag, index) => <TagRender key={tag.id} tag={tag} index={index} firstElement={firstElement}/>
+      (tag, index) => <TagRender key={tag.id} tag={tag} index={index} anchor={firstElement}/>
     );
     return createPortal(<>{tags}</>, placeHolder)
   }
