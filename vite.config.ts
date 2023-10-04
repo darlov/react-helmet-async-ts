@@ -13,6 +13,9 @@ export default defineConfig((opt) => {
         ['test/server/**\/*.{test,spec}.{ts,tsx}', 'node'],
         ['test/benchmark/**\/*.bench.tsx', 'jsdom'],
       ],
+      benchmark:{
+        
+      },
       globals: true,
       setupFiles: "./test/vitest.setup.ts",
       logHeapUsage: true,

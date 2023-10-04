@@ -21,7 +21,7 @@ export const createTagComponent =
 
       const tagId = useId();
       const typeProps = useMemo((): ITypedTagProps<T> => {
-        return {tagProps, tagType: tagType, id: tagId}
+        return {tagProps, tagName: tagType, id: tagId}
       }, [tagProps, tagType, tagId])
 
       const addCallback = useCallback(() => {

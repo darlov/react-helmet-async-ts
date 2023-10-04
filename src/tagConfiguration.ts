@@ -6,7 +6,7 @@ import {
   TagValue
 } from "./types";
 
-enum DocumentPosition {
+export enum DocumentPosition {
   Document,
   Header
 }
@@ -23,7 +23,7 @@ interface ITagRenderConfig<TagType extends TagName> {
 export type TagRenderConfigs = { [P in keyof TagPropsMap]: Readonly<ITagRenderConfig<P>> }
 
 const buildKey = <TagType extends TagName>(tag: ITypedTagProps<TagType>, attr: keyof TagPropsMap[TagType] | undefined) => {
-  return attr === undefined ? undefined : `${tag.tagType}~${String(attr)}~${tag.tagProps[attr]}`
+  return attr === undefined ? undefined : `${tag.tagName}~${String(attr)}~${tag.tagProps[attr]}`
 }
 
 export const tagConfigs: TagRenderConfigs = {
@@ -44,7 +44,7 @@ export const tagConfigs: TagRenderConfigs = {
   },
   [TagName.link]: {
     position: DocumentPosition.Header,
-    primaryAttrs: ["href", "rel"],
+    primaryAttrs: ["rel", "href"],
     isValid: (tag, config) => config.primaryAttrs!.every(attr => tag[attr] !== undefined),
     getUniqueKey: (tag, config) => {
       const attr = config.primaryAttrs!.find(attr => tag.tagProps[attr] !== null && !(attr === "rel" && tag.tagProps[attr] === "stylesheet"));

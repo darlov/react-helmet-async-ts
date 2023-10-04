@@ -1,4 +1,4 @@
-import {FC, memo, ReactNode, useMemo} from "react";
+import {memo, ReactNode, useMemo} from "react";
 import {IHelmetInstanceState} from "./types";
 import {useHelmetContext} from "./HelmetProvider";
 import {Title} from "./tags";

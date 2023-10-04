@@ -1,25 +1,15 @@
-import {ReactElement} from "react";
-
-export const TitleTagName = "title";
-export const MetaTagName = "meta";
-export const StyleTagName = "style";
-export const ScriptTagName = "script";
-export const LinkTagName = "link";
-export const NoscriptTagName = "noscript";
-export const BaseTagName = "base";
-export const BodyTagName = "body";
-export const HtmlTagName = "html";
+import {ReactElement, JSX} from "react";
 
 export enum TagName {
-  title = TitleTagName,
-  meta = MetaTagName,
-  style = StyleTagName,
-  script = ScriptTagName,
-  link = LinkTagName,
-  noscript = NoscriptTagName,
-  base = BaseTagName,
-  body = BodyTagName,
-  html = HtmlTagName
+  title = "title",
+  meta = "meta",
+  style = "style",
+  script = "script",
+  link = "link",
+  noscript = "noscript",
+  base = "base",
+  body = "body",
+  html = "html"
 }
 
 export type TagNames = keyof typeof TagName;
@@ -48,30 +38,15 @@ export type TagPropsMap = {
 
 export interface ITypedTagProps<TName extends TagName> {
   id: string,
-  tagType: TName,
+  tagName: TName,
   tagProps: TagPropsMap[TName]
 }
 
-export type TypedTagsProps = ITypedTagProps<TagName.base>
-  | ITypedTagProps<TagName.body>
-  | ITypedTagProps<TagName.html>
-  | ITypedTagProps<TagName.link>
-  | ITypedTagProps<TagName.meta>
-  | ITypedTagProps<TagName.noscript>
-  | ITypedTagProps<TagName.script>
-  | ITypedTagProps<TagName.style>
-  | ITypedTagProps<TagName.title>;
-
-export type TagProps =
-  TitleProps
-  | MetaProps
-  | StyleProps
-  | ScriptProps
-  | LinkProps
-  | NoscriptProps
-  | BaseProps
-  | BodyProps
-  | HtmlProps;
+export type TypedTagPropsMap = {
+  [Properties in keyof TagPropsMap]: ITypedTagProps<Properties>
+}
+export type TypedTagsProps = TypedTagPropsMap[keyof TypedTagPropsMap]
+export type TagProps = TagPropsMap[keyof TagPropsMap];
 
 export interface IHelmetInstanceState {
   id: number;
@@ -113,13 +88,13 @@ export type TagConfig<T extends string, K extends TagProps> = {
   [P in keyof K]: K[P] | ITagValueConfig<K[P]>
 };
 
-export type TitleTagConfigName = TagName.title | typeof TitleTagName;
-export type BaseTagConfigName = TagName.base | typeof BaseTagName;
-export type MetaTagConfigName = TagName.meta | typeof MetaTagName;
-export type StyleTagConfigName = TagName.style | typeof StyleTagName;
-export type ScriptTagConfigName = TagName.script | typeof ScriptTagName;
-export type LinkTagConfigName = TagName.link | typeof LinkTagName;
-export type NoscriptTagConfigName = TagName.noscript | typeof NoscriptTagName;
+export type TitleTagConfigName = TagName.title | typeof TagName.title;
+export type BaseTagConfigName = TagName.base | typeof TagName.base;
+export type MetaTagConfigName = TagName.meta | typeof TagName.meta;
+export type StyleTagConfigName = TagName.style | typeof TagName.style;
+export type ScriptTagConfigName = TagName.script | typeof TagName.script;
+export type LinkTagConfigName = TagName.link | typeof TagName.link;
+export type NoscriptTagConfigName = TagName.noscript | typeof TagName.noscript;
 
 export type TagConfigName = TitleTagConfigName
   | BaseTagConfigName
@@ -151,11 +126,13 @@ export const TagValue = {
   }
 }
 
-export type AnchorElementType = "first" | "firstIncluded" | "parent";
+export type AnchorElementType = "child" | "head";
+export type AnchorInsertPosition = "before" | "after";
 
 export interface IHeadAnchorElement{
   element: Element,
   elementType: AnchorElementType
+  insertPosition: AnchorInsertPosition
 }
 
 

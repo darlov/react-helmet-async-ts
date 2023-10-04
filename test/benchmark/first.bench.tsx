@@ -28,7 +28,7 @@ describe('sort', () => {
         </HelmetAsync>
       </HelmetProviderAsync>);
     })
-  })
+  }, {time: 1000})
   
   bench('New Helmet', () => {
     act(() => {
@@ -49,7 +49,7 @@ describe('sort', () => {
           </Helmet>
         </HelmetContextProvider>);
     })
-  })
+  }, {time: 1000})
 
 
 })

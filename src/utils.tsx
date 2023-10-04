@@ -115,7 +115,7 @@ export namespace _ {
 
 export const getUniqueKey = <T extends TagName,>(tag: ITypedTagProps<T>, tagConfig: TagRenderConfigs[T]) : string | undefined => {
   return tagConfig.getUniqueKey && tagConfig.getUniqueKey(tag, tagConfig);
-} 
+}
 
 export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagConfigName, ITagPriorityConfigMap[]>): IHelmetState => {
   const state: IHelmetState = {
@@ -131,11 +131,11 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
 
     if (instance.tags) {
       for (const tag of instance.tags) {
-        const tagConfig = tagConfigs[tag.tagType];
+        const tagConfig = tagConfigs[tag.tagName];
 
         if (tagConfig.isUnique) {
-          const existItems = uniqueItems.get(tag.tagType) ?? [];
-          uniqueItems.set(tag.tagType, [{...existItems[0], ...tag}])
+          const existItems = uniqueItems.get(tag.tagName) ?? [];
+          uniqueItems.set(tag.tagName, [{...existItems[0], ...tag}])
         } else {
           const primaryAttrKey = getUniqueKey(tag, tagConfig);
           if (primaryAttrKey !== undefined) {
@@ -159,7 +159,7 @@ export const buildState = (instances: IHelmetInstanceState[], priority: Map<TagC
         const existTitle = existTitles[0];
         uniqueItems.set(TagName.title, [{
           id: existTitle.id,
-          tagType: existTitle.tagType,
+          tagName: existTitle.tagName,
           tagProps: {children: existTitle.tagProps.children}
         }]);
       }
@@ -182,7 +182,7 @@ const buildHeaderTags = (sourceTags: TypedTagsProps[], priorityConfig: Map<TagCo
 
   for (let i = 0; i < sourceTags.length; i++) {
     const sourceTag = sourceTags[i];
-    const configItems = priorityConfig.get(sourceTag.tagType as TagConfigName);
+    const configItems = priorityConfig.get(sourceTag.tagName as TagConfigName);
 
     if (configItems === undefined) {
       priorityTags.push({priority: outOfConfigStartIndex + i, tag: sourceTag})
@@ -246,7 +246,7 @@ export const buildServerState = (state: IHelmetState): IHelmetServerState => {
   let htmlAttributes: ITypedTagProps<TagName> | undefined;
 
   const tags = state.tags.flatMap((val, i) => {
-    switch (val.tagType) {
+    switch (val.tagName) {
       case TagName.body:
         bodyAttributes = val;
         return [];
@@ -295,7 +295,7 @@ export const renderToHtmlElement = (node: ReactElement, selector: TagNames) => {
 }
 
 export const createComponent = <T extends TagName, >(tag: ITypedTagProps<T>, key?: Key): JSX.Element => {
-  return createElement(tag.tagType, {...tag.tagProps, "data-rh": true, key: key})
+  return createElement(tag.tagName, {...tag.tagProps, "data-rh": true, key: key})
 }
 
 export const getHtmlAttributesFromHtmlElement = <T extends Element>(htmlElement: T) => {

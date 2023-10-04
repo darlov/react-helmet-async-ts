@@ -9,7 +9,7 @@ describe("html attributes", () => {
       </Helmet>
     );
 
-    const htmlTag = document.getElementsByTagName("html")[0];
+    const htmlTag = document.querySelector("html")!;
 
     expect(htmlTag.getAttribute("class")).to.equal("myClassName");
     expect(htmlTag.getAttribute("lang")).to.equal("en");
@@ -28,7 +28,7 @@ describe("html attributes", () => {
       </div>
     );
 
-    const htmlTag = document.getElementsByTagName("html")[0];
+    const htmlTag = document.querySelector("html")!;
 
     expect(htmlTag.getAttribute("lang")).to.equal("ja");
     expect(htmlTag.getAttribute(HELMET_ATTRIBUTE)).to.equal("true");
@@ -41,7 +41,7 @@ describe("html attributes", () => {
       </Helmet>
     );
 
-    const htmlTag = document.getElementsByTagName("html")[0];
+    const htmlTag = document.querySelector("html")!;
 
     expect(htmlTag.getAttribute("data-amp")).to.equal("true");
     expect(htmlTag.getAttribute(HELMET_ATTRIBUTE)).to.equal("true");
@@ -55,7 +55,7 @@ describe("html attributes", () => {
       <Helmet />
     );
 
-    const htmlTag = document.getElementsByTagName("html")[0];
+    const htmlTag = document.querySelector("html")!;
 
     expect(htmlTag.getAttribute("lang")).to.be.null;
     expect(htmlTag.getAttribute("data-amp")).to.be.null;
@@ -72,7 +72,7 @@ describe("html attributes", () => {
       </Helmet>
     );
 
-    const htmlTag = document.getElementsByTagName("html")[0];
+    const htmlTag = document.querySelector("html")!;
 
     expect(htmlTag.getAttribute("data-amp")).to.equal(null);
     expect(htmlTag.getAttribute("lang")).to.equal("ja");
@@ -91,7 +91,7 @@ describe("html attributes", () => {
       </Helmet>
     );
 
-    const htmlTag = document.getElementsByTagName("html")[0];
+    const htmlTag = document.querySelector("html")!;
 
     expect(htmlTag.getAttribute("amp")).to.equal(null);
     expect(htmlTag.getAttribute("lang")).to.equal(null);
@@ -102,14 +102,14 @@ describe("html attributes", () => {
 
   describe("initialized outside of helmet", () => {
     beforeEach(() => {
-      const htmlTag = document.getElementsByTagName("html")[0];
+      const htmlTag = document.querySelector("html")!;
       htmlTag.setAttribute("data-test", "test");
     });
 
     it("are not cleared", () => {
       render(<Helmet />);
 
-      const htmlTag = document.getElementsByTagName("html")[0];
+      const htmlTag = document.querySelector("html")!;
 
       expect(htmlTag.getAttribute("data-test")).to.equal("test");
       expect(htmlTag.getAttribute(HELMET_ATTRIBUTE)).to.equal(null);
