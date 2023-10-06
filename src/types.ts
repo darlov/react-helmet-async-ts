@@ -1,4 +1,4 @@
-import {ReactElement, JSX} from "react";
+import {ReactElement, JSX, HTMLAttributes, BaseHTMLAttributes, HtmlHTMLAttributes} from "react";
 
 export enum TagName {
   title = "title",

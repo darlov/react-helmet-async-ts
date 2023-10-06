@@ -1,10 +1,11 @@
 import {IHeadAnchorElement, TagName} from "../types";
 import {DocumentPosition, tagConfigs} from "../tagConfiguration";
+import {MutableRefObject} from "react";
 
 export const getNextElementSiblingAt = (index: number, element: Element | null) => {
   let foundElement: Element | null = element;
   let i = 0;
-  while(foundElement != null && i < index){
+  while (foundElement != null && i < index) {
     i++
     foundElement = foundElement.nextElementSibling;
   }
@@ -12,61 +13,44 @@ export const getNextElementSiblingAt = (index: number, element: Element | null) 
   return foundElement;
 }
 
-export const getElementAt = (index: number, anchor: IHeadAnchorElement) : Element | null => {
-  switch(anchor.elementType){
-    case "first":
-      return getNextElementSiblingAt(index, anchor.element.nextElementSibling);
-    case "firstIncluded":
-      return getNextElementSiblingAt(index, anchor.element);
-    case "parent":
-      return anchor.element.children.item(index);
-  }
-}
+// export const getElementAt = (index: number, anchor: IHeadAnchorElement): Element | null => {
+//   switch (anchor.elementType) {
+//     case "first":
+//       return getNextElementSiblingAt(index, anchor.element.nextElementSibling);
+//     case "firstIncluded":
+//       return getNextElementSiblingAt(index, anchor.element);
+//     case "parent":
+//       return anchor.element.children.item(index);
+//   }
+// }
 
-export const getCurrentElement = (isFirst: boolean, anchor: IHeadAnchorElement, name: TagName) : Element | null => {
+export const getCurrentHeadElement = (name: TagName): Element | null => {
   const tagConfig = tagConfigs[name];
-  if(tagConfig.position === DocumentPosition.Document) {
-    return document.querySelector(name);
+
+  if (tagConfig.isUnique) {
+    return document.head.querySelector(name);
   }
-  
-  if(tagConfig.position === DocumentPosition.Header){
-    if(tagConfig.isUnique){
-      return document.head.querySelector(name);
-    }
 
-    const currentElement = getElementAt(index, anchor);
-    if(currentElement && currentElement.tagName.localeCompare(name) === 0){
-      return currentElement
-    }
-  }
-  
-
-
- 
- return null;
+  // const currentElement = getElementAt(index, anchor);
+  // if (currentElement && currentElement.tagName.localeCompare(name) === 0) {
+  //   return currentElement
+  // }
+  return null;
 }
 
-export const addTag = (from: Element, isFirst: boolean, anchor: IHeadAnchorElement): () => void => {
+export const addTag = (from: Element, elementToRef: MutableRefObject<Element | undefined>): () => void => {
   const element = from.cloneNode(true) as Element;
   let attachedElement: Element | null | undefined = null
-  switch(anchor.elementType) {
-    case "first":
-      attachedElement = getNextElementSiblingAt(index, anchor.element)?.insertAdjacentElement("afterend", element);
-      break;
-    case "parent":
-      if (index === 0) {
-        attachedElement = anchor.element?.insertAdjacentElement("afterbegin", element);
-      } else {
-        attachedElement = anchor.element.children.item(index - 1)?.insertAdjacentElement("afterend", element);
-      }
-      break;
+
+  attachedElement = document.head.appendChild(element);
+  if(attachedElement){
+    elementToRef.current = attachedElement;
   }
-
   return () => {
-    if(attachedElement){
+    if (attachedElement) {
       attachedElement.remove();
+      elementToRef.current = undefined;
     }
-
   }
 }
 
@@ -84,23 +68,22 @@ export const updateTag = (from: Element, to: Element, tagName: TagName): () => v
     to.setAttribute(attribute.name, attribute.value);
   }
 
-  let childNodes: Element[] = []
-  if(!applyOnlyAttrs){
-    if(from.children.length > 0) {
-      childNodes = [...(from.cloneNode(true) as Element).children];
+  let childNodes: ChildNode[] = []
+  if (!applyOnlyAttrs) {
+    if (from.childNodes.length > 0) {
+      childNodes = [...(from.cloneNode(true) as Element).childNodes];
       removeAllChildNodes(to)
       childNodes.forEach((node) => {
         to.appendChild(node);
       })
-    } 
+    }
   }
-  
 
   return () => {
     for (const attribute of attributes) {
       to.removeAttribute(attribute.name);
     }
-    if(!applyOnlyAttrs && childNodes.length > 0) {
+    if (!applyOnlyAttrs && childNodes.length > 0) {
       childNodes.forEach((node) => {
         node.remove();
       })

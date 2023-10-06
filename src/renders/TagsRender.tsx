@@ -1,7 +1,9 @@
 import {FC, useMemo} from "react";
-import {AnchorElementType, AnchorInsertPosition, IHeadAnchorElement, IHelmetState} from "../types";
-import {TagRender} from "./TagRender";
+import {AnchorInsertPosition, IHeadAnchorElement, IHelmetState} from "../types";
+import {HeadTagRender} from "./HeadTagRender";
 import {createPortal} from "react-dom";
+import {DocumentPosition, tagConfigs} from "../tagConfiguration";
+import {DocumentTagRender} from "./DocumentTagRender";
 
 interface ITagRenderProps {
   state?: IHelmetState;
@@ -15,9 +17,10 @@ export const TagsRender: FC<ITagRenderProps> = ({canUseDOM, state, elementSelect
     return document.createDocumentFragment();
   }, []);
 
+
   const anchor = useMemo<IHeadAnchorElement>(() => {
     if (elementSelector) {
-      const headElement = document.head.querySelectorAll(elementSelector).item(0);
+      const headElement = document.head.querySelector(elementSelector);
 
       if (headElement && headElement.parentNode?.isEqualNode(document.head)) {
         return {element: headElement, elementType: "child", insertPosition: insertPosition ?? "after"}
@@ -30,9 +33,17 @@ export const TagsRender: FC<ITagRenderProps> = ({canUseDOM, state, elementSelect
 
   if (canUseDOM && state && state.tags.length > 0) {
     const tags = state.tags.map(
-        (tag, index) => <TagRender key={tag.id} tag={tag} isFirst={index === 0} anchor={anchor}/>
+        (tag, index) => {
+          const tagConfig = tagConfigs[tag.tagName];
+          switch (tagConfig.position) {
+            case DocumentPosition.Header :
+              return <HeadTagRender key={tag.id} tag={tag}/>;
+            case DocumentPosition.Document :
+              return <DocumentTagRender key={tag.id} tag={tag}/>;
+          }
+        }
     );
-    return createPortal(<>{tags.reverse()}</>, placeHolder)
+    return createPortal(<>{tags}</>, placeHolder)
   }
 
   return null;
